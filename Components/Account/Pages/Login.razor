@@ -12,54 +12,64 @@
 
 <PageTitle>Log in</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
+<div class="d-flex justify-content-center align-items-center mt-5 mb-5">
     <div class="col-lg-6">
-        <section>
+        <section class="card p-5 shadow-lg rounded-4 text-center">
+         
+            <div class="d-flex justify-content-center">
+                <img src="favicon.svg" alt="Logo" class="rounded-circle shadow-sm bg-light p-2"
+                     width="125" height="125" />
+            </div>
+
             <StatusMessage Message="@errorMessage" />
             <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
-                <h2>Use a local account to log in.</h2>
+                <h2 class="fs-4">Use a local account to log in.</h2>
                 <hr />
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label for="Input.Email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                <ValidationSummary class="text-danger fs-5" role="alert" />
+
+                <!-- Email Input -->
+                <div class="mb-3">
+                    <InputText @bind-Value="Input.Email" id="Input.Email"
+                               class="form-control fs-5 rounded-pill border-0 shadow-sm bg-light p-3"
+                               autocomplete="username" aria-required="true" placeholder="Email" />
+                    <ValidationMessage For="() => Input.Email" class="text-danger fs-6 mt-1" />
                 </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="Input.Password" class="form-label">Password</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+
+                <!-- Password Input -->
+                <div class="mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password"
+                               class="form-control fs-5 rounded-pill border-0 shadow-sm bg-light p-3"
+                               autocomplete="current-password" aria-required="true" placeholder="Password" />
+                    <ValidationMessage For="() => Input.Password" class="text-danger fs-6 mt-1" />
                 </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
+
+                <!-- Remember Me Checkbox -->
+                <div class="form-check mb-3">
+                    <label class="form-check-label fs-5">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input fs-5" />
                         Remember me
                     </label>
                 </div>
+
+                <!-- Submit Button -->
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary p-2 fs-5 rounded-pill shadow-sm">
+                        Log in
+                    </button>
                 </div>
-                <div>
+
+                <!-- Links -->
+                <div class="text-center mt-3 fs-5">
+                    <p><a href="Account/ForgotPassword">Forgot your password?</a></p>
                     <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
+                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
+                            Register as a new user
+                        </a>
                     </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
+                    <p><a href="Account/ResendEmailConfirmation">Resend email confirmation</a></p>
                 </div>
             </EditForm>
-        </section>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr />
-            <ExternalLoginPicker />
         </section>
     </div>
 </div>
