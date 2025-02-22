@@ -11,10 +11,10 @@ public class Citas
     public DateTime Fecha { get; set; }
     public int MascotaId { get; set; }
     [ForeignKey("MascotaId")]
-    public virtual Mascotas Mascotas { get; set; }
+    public virtual Mascotas Mascota { get; set; }
 
     public int EmpleadoId { get; set; }
     [ForeignKey("EmpleadoId")]
-    public virtual Empleados Empleados { get; set; }
+    public virtual Empleados Empleado { get; set; }
 
 }
