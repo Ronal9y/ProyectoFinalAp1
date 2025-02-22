@@ -26,5 +26,5 @@ public class Empleados
     [Required(ErrorMessage = "Este campo es obligatorio")]
     public decimal Salario { get; set; }
 
-    public virtual ICollection<Citas> Citas { get; set; } = new List<Citas>();
+    public virtual ICollection<Citas> Cita { get; set; } = new List<Citas>();
 }
