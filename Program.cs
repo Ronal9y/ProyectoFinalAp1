@@ -17,6 +17,9 @@ namespace ProyectoFinalAp1
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
+            builder.Services.AddDbContextFactory<ApplicationDbContext>(o => o.UseSqlServer(ConStr));
+
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
             builder.Services.AddScoped<IdentityRedirectManager>();
