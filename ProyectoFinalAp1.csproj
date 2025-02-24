@@ -14,4 +14,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+    <Folder Include="wwwroot\Imagenes\Mascotas\" />
+    <Folder Include="wwwroot\Imagenes\Comida\" />
+    <Folder Include="wwwroot\Imagenes\Jugetes\" />
+    <Folder Include="wwwroot\Imagenes\Medicamentos\" />
+  </ItemGroup>
+
 </Project>
