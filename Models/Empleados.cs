@@ -24,7 +24,7 @@ public class Empleados
     [DataType(DataType.Date)]
     public DateTime FechaDeContratacion { get; set; }
     [Required(ErrorMessage = "Este campo es obligatorio")]
-    public decimal Salario { get; set; }
+    public double Salario { get; set; }
 
     public virtual ICollection<Citas> Cita { get; set; } = new List<Citas>();
 }
