@@ -3,13 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProyectoFinalAp1.Models
 {
-    public class ArticuloMascotas
+    public class CarritoMascotas
     {
         [Key]
-        public int Id { get; set; }
-        public int CarritoId { get; set; }
-        [ForeignKey("CarritoId")]
-        public virtual Carrito Carritos { get; set; }
+        public int CarritoMascotaId { get; set; }
+
+        [Required]
         public int MascotaId { get; set; }
         [ForeignKey("MascotaId")]
         public virtual Mascotas Mascota { get; set; }
@@ -17,6 +16,6 @@ namespace ProyectoFinalAp1.Models
         [Required(ErrorMessage = "La cantidad es obligatoria.")]
         [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0.")]
         public int Cantidad { get; set; }
-
+       
     }
 }

@@ -22,7 +22,7 @@ public class Mascotas
     public DateTime FechaDeNacimiento { get; set; }
 
     [Required(ErrorMessage = "El campo Precio es obligatorio.")]
-    public decimal? Precio { get; set; }
+    public double Precio { get; set; }
 
     [Required(ErrorMessage = "La cantidad es obligatoria.")]
     [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0.")]
