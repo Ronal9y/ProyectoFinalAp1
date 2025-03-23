@@ -1,0 +1,71 @@
+﻿@page "/Carrito"
+@using ProyectoFinalAp1.Services
+@using ProyectoFinalAp1.Models
+@inject CarritoService CarritoService
+
+<h2>Carrito de Compras</h2>
+
+@if (carritoItems == null)
+{
+    <p>Cargando...</p>
+}
+else if (!carritoItems.Any()) // Mejor usar .Any() en vez de Count == 0
+{
+    <div class="alert alert-info">No hay productos en el carrito.</div>
+    <a href="/productos" class="btn btn-primary">Ir a Productos</a>
+}
+
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carritoItems)
+            {
+                <tr>
+                    <td>@item.Producto.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>@item.Producto.Precio.ToString("C")</td>
+                    <td>@((item.Cantidad * item.Producto.Precio).ToString("C"))</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => EliminarDelCarrito(item.CarritoId)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-right">
+        <h4>Total del Carrito: @carritoItems.Sum(item => item.Cantidad * item.Producto.Precio).ToString("C")</h4>
+    </div>
+
+    <a href="/Producto/Index" class="btn btn-primary">Seguir Comprando</a>
+}
+
+@code {
+    private List<ProyectoFinalAp1.Models.Carrito> carritoItems = new List<ProyectoFinalAp1.Models.Carrito>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        carritoItems = await CarritoService.ObtenerCarritoAsync();
+    }
+
+    private async Task EliminarDelCarrito(int carritoId)
+    {
+        await CarritoService.EliminarDelCarritoAsync(carritoId);
+        await CargarCarrito(); // Recargar datos
+    }
+}
