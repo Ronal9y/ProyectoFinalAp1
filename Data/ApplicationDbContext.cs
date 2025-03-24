@@ -23,9 +23,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser> {
     {
         base.OnModelCreating(modelBuilder);
 
+        // Configuración de la relación entre Carrito y Productos
         modelBuilder.Entity<Carrito>()
             .HasOne(c => c.Producto)
-            .WithMany()
-            .HasForeignKey(c => c.ProductoId);
+            .WithMany(p => p.Carrito) // Especifica la propiedad de navegación en Productos
+            .HasForeignKey(c => c.ProductoId)
+            .OnDelete(DeleteBehavior.Cascade); // Cambia a Cascade si es necesario
+
+        // Configuración de índices únicos
+        modelBuilder.Entity<Productos>()
+            .HasIndex(p => p.Nombre)
+            .IsUnique();
     }
 }
