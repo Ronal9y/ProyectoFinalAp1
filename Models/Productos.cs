@@ -26,7 +26,5 @@ public class Productos
     [NotMapped]
     public int CantidadSeleccionada { get; set; } = 1;
     public string? TipoCategoria { get; set; }
-    public int ProveedorId { get; set; }
-    [ForeignKey("ProveedorId")]
-    public virtual Proveedores Proveedores { get; set; }
+    public virtual ICollection<Carrito> Carrito { get; set; } = new List<Carrito>();
 }
