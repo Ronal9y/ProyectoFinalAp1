@@ -11,25 +11,18 @@ public class Productos
     [Required(ErrorMessage = "El nombre es obligatorio.")]
     [StringLength(100, ErrorMessage = "El nombre no puede exceder los 100 caracteres.")]
     public string? Nombre { get; set; }
-    [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
+
     [DataType(DataType.Date)]
-    public DateTime Fecha { get; set; }
-    [Required(ErrorMessage = "La Descripcion es obligatorio.")]
+    public DateTime Fecha { get; set; } = DateTime.Now;
+
+    [Required(ErrorMessage = "La Descripcion es obligatoria.")]
     public string? Descripcion { get; set; }
-    [Required(ErrorMessage = "La imagen es obligatoria.")]
-    [Url(ErrorMessage = "Debe proporcionar una URL válida para la foto del producto.")]
-    public string? ImagenURL { get; set; }
+
     [Required(ErrorMessage = "El campo Precio es obligatorio.")]
-    public decimal? Precio { get; set; }
+    public double? Precio { get; set; }
+
     [Required(ErrorMessage = "La cantidad es obligatoria.")]
     [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0.")]
     public int Cantidad { get; set; }
-    public int CategoriaId { get; set; }
-
-    [ForeignKey("CategoriaId")]
-    public ProductoCategorias ProductoCategoria { get; set; }
-
-    public int ProveedorId { get; set; }
-    [ForeignKey("ProveedorId")]
-    public virtual Proveedores Proveedor { get; set; }
+    public virtual ICollection<Carrito> Carritos { get; set; } = new List<Carrito>();
 }

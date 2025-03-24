@@ -9,20 +9,26 @@ public class Mascotas
     public int MascotaId { get; set; }
 
     [Required(ErrorMessage = "El campo Nombre es obligatorio.")]
+    [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo pueden contener letras.")]
+
     public string? Nombre { get; set; }
 
     [Required(ErrorMessage = "El campo Tipo es obligatorio.")]
     public string? Tipo { get; set; }
 
     [Required(ErrorMessage = "El campo Raza es obligatorio.")]
+    [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "La raza solo pueden contener letras.")]
+
     public string? Raza { get; set; }
 
     [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
     [DataType(DataType.Date)]
-    public DateTime FechaDeNacimiento { get; set; }
+    public DateTime FechaDeNacimiento { get; set; } 
 
     [Required(ErrorMessage = "El campo Precio es obligatorio.")]
-    public decimal? Precio { get; set; }
+    [Range(1, double.MaxValue, ErrorMessage = "El precio debe ser mayor a 0.")]
+
+    public double? Precio { get; set; }
 
     [Required(ErrorMessage = "La cantidad es obligatoria.")]
     [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0.")]

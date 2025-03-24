@@ -8,7 +8,7 @@ public class Citas
     [Key]
     public int CitaId { get; set; }
 
-    public DateTime Fecha { get; set; }
+    public DateTime Fecha { get; set; } = DateTime.Now; 
     public int MascotaId { get; set; }
     [ForeignKey("MascotaId")]
     public virtual Mascotas Mascota { get; set; }

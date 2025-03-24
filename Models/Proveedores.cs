@@ -20,10 +20,9 @@ public class Proveedores
     public string? Direccion { get; set; }
     [Required(ErrorMessage = "Favor colocar el teléfono.")]
     [RegularExpression(@"^\d{10}$", ErrorMessage = "El número de teléfono debe contener exactamente 10 dígitos.")]
-    public string? Telefono { get; set; }
+    public int? Telefono { get; set; }
     [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
     [EmailAddress(ErrorMessage = "Debe ingresar un correo electrónico válido.")]
     public string? Email { get; set; }
 
-    public virtual ICollection<Productos> Producto { get; set; } = new List<Productos>();
 }
