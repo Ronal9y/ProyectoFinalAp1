@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using ProyectoFinalAp1.Components;
-using ProyectoFinalAp1.Components.Account;
-using ProyectoFinalAp1.Data;
+global using Microsoft.AspNetCore.Components.Authorization;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.EntityFrameworkCore;
+global using ProyectoFinalAp1.Components;
+global using ProyectoFinalAp1.Components.Account;
+global using ProyectoFinalAp1.Data;
+global using Microsoft.EntityFrameworkCore.Design;
+global using ProyectoFinalAp1.Services;
 
 namespace ProyectoFinalAp1
 {
@@ -17,24 +19,33 @@ namespace ProyectoFinalAp1
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            // Configuración del DbContext
             var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
-            builder.Services.AddDbContextFactory<ApplicationDbContext>(o => o.UseSqlServer(ConStr));
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(ConStr);
+            });
+
+            // Registrar DbContextFactory como Scoped
+            builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(ConStr);
+            }, ServiceLifetime.Scoped); // <-- Aquí se especifica el ciclo de vida Scoped
 
             builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddScoped<CarritoService>();
+            builder.Services.AddScoped<ProductoService>();
             builder.Services.AddScoped<IdentityUserAccessor>();
             builder.Services.AddScoped<IdentityRedirectManager>();
             builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
             builder.Services.AddAuthentication(options =>
-                {
-                    options.DefaultScheme = IdentityConstants.ApplicationScheme;
-                    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-                })
+            {
+                options.DefaultScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            })
                 .AddIdentityCookies();
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
