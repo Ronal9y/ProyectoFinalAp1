@@ -1,0 +1,126 @@
+﻿@page "/Productos/CarritoProducto"
+@using ProyectoFinalAp1.Models
+@inject ProductoService productoService
+@inject CarritoService carritoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Carrito de Productos</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title">Seleccionar Producto para el Carrito</h5>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @ErrorMessage
+                </div>
+            }
+
+            @* Lista de productos disponibles *@
+            <div class="mb-3">
+                <label class="form-label"><strong>Seleccionar Producto</strong></label>
+                <select class="form-control" @bind="productoSeleccionadoId">
+                    <option value="">Seleccione un producto</option>
+                    @foreach (var producto in productos)
+                    {
+                        <option value="@producto.ProductoId">@producto.Nombre - @(producto.Precio?.ToString("C") ?? "Precio no disponible")</option>
+                    }
+                </select>
+            </div>
+
+            @* Cantidad *@
+            <div class="mb-3">
+                <label class="form-label"><strong>Cantidad</strong></label>
+                <InputNumber class="form-control" @bind-Value="cantidadSeleccionada" />
+            </div>
+
+            @* Botón para agregar al carrito *@
+            <div class="text-center">
+                <button class="btn btn-primary" @onclick="AgregarAlCarrito">
+                    <span class="bi bi-cart-plus"></span> Agregar al Carrito
+                </button>
+            </div>
+        </div>
+
+        <div class="card-footer text-center mt-2">
+            <a href="/Productos/IndexProductos" class="btn btn-secondary">
+                <span class="bi bi-arrow-left"></span> Volver
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Productos> productos = new List<Productos>();
+    private int productoSeleccionadoId;
+    private int cantidadSeleccionada = 1;
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Obtener la lista de productos disponibles
+        productos = await productoService.Listar(p => p.Cantidad > 0);
+    }
+
+    private async Task AgregarAlCarrito()
+    {
+        try
+        {
+            if (productoSeleccionadoId == 0)
+            {
+                ErrorMessage = "Por favor, seleccione un producto.";
+                return;
+            }
+
+            if (cantidadSeleccionada <= 0)
+            {
+                ErrorMessage = "La cantidad debe ser mayor que 0.";
+                return;
+            }
+
+            // Buscar el producto seleccionado
+            var producto = await productoService.Buscar(productoSeleccionadoId);
+
+            if (producto == null)
+            {
+                ErrorMessage = "El producto seleccionado no existe.";
+                return;
+            }
+
+            // Verificar si hay suficiente stock
+            if (producto.Cantidad < cantidadSeleccionada)
+            {
+                ErrorMessage = "No hay suficiente stock disponible.";
+                return;
+            }
+
+            // Agregar el producto al carrito
+            bool agregado = await carritoService.AgregarAlCarrito(producto.ProductoId, cantidadSeleccionada);
+
+            if (agregado)
+            {
+                // Limpiar selección y mensajes de error
+                productoSeleccionadoId = 0;
+                cantidadSeleccionada = 1;
+                ErrorMessage = string.Empty;
+
+                // Redirigir a la página del carrito o mostrar un mensaje de éxito
+                navigationManager.NavigateTo("/Carrito/IndexCarrito");
+            }
+            else
+            {
+                ErrorMessage = "No se pudo agregar el producto al carrito. Verifique el stock disponible.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ocurrió un error inesperado. Por favor, intenta nuevamente.";
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}

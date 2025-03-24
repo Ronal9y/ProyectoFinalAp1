@@ -1,0 +1,101 @@
+﻿@page "/Productos/CreateProducto"
+@using ProyectoFinalAp1.Models
+@inject ProductoService productoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Crear Producto</PageTitle>
+
+<EditForm Model="@producto" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Nuevo Producto</h5>
+            </div>
+
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @ErrorMessage
+                    </div>
+                }
+
+                @* Nombre *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre</strong></label>
+                    <InputText class="form-control" @bind-Value="@producto.Nombre" />
+                    <ValidationMessage For="@(() => producto.Nombre)" />
+                </div>
+
+                @* Descripción *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripción</strong></label>
+                    <InputText class="form-control" @bind-Value="@producto.Descripcion" />
+                    <ValidationMessage For="@(() => producto.Descripcion)" />
+                </div>
+
+                @* Precio *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Precio</strong></label>
+                    <InputNumber class="form-control" @bind-Value="@producto.Precio" />
+                    <ValidationMessage For="@(() => producto.Precio)" />
+                </div>
+
+                @* Cantidad *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad</strong></label>
+                    <InputNumber class="form-control" @bind-Value="@producto.Cantidad" />
+                    <ValidationMessage For="@(() => producto.Cantidad)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <a href="/Productos/IndexProductos" class="btn btn-secondary">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public Productos producto { get; set; } = new Productos();
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            // Intenta guardar el producto
+            bool productoGuardado = await productoService.Guardar(producto);
+
+            if (productoGuardado)
+            {
+                // Limpia el formulario después de guardar
+                producto = new Productos();
+                ErrorMessage = string.Empty;
+
+                // Redirige a la página de productos
+                navigationManager.NavigateTo("/Productos/IndexProducto");
+            }
+            else
+            {
+                ErrorMessage = "No se pudo guardar el producto. Por favor, intenta nuevamente.";
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Captura la excepción si ocurre un duplicado
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            // Captura cualquier otro error
+            ErrorMessage = "Ocurrió un error inesperado. Por favor, intenta nuevamente.";
+        }
+    }
+}

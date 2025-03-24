@@ -1,0 +1,67 @@
+﻿@page "/Productos/IndexProducto"
+@inject ProductoService productoservices
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Índice de Productos</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title">Productos</h5>
+            <div class="d-flex justify-content-between">
+                <button class="btn btn-primary" @onclick="CrearProducto">
+                    <span class="bi bi-plus"></span> Crear Producto
+                </button>
+                <button class="btn btn-success" @onclick="IrACarritoProducto">
+                    <span class="bi bi-cart"></span> Ir al Carrito
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="text-center">
+                    <tr>
+                        <th><strong>Producto Id</strong></th>
+                        <th><strong>Nombre</strong></th>
+                        <th><strong>Descripción</strong></th>
+                        <th><strong>Precio</strong></th>
+                        <th><strong>Cantidad</strong></th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    @foreach (var producto in productos)
+                    {
+                        <tr>
+                            <td>@producto.ProductoId</td>
+                            <td>@producto.Nombre</td>
+                            <td>@producto.Descripcion</td>
+                            <td>@producto.Precio.</td> <!-- Formato de moneda -->
+                            <td>@producto.Cantidad</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ProyectoFinalAp1.Models.Productos> productos = new List<ProyectoFinalAp1.Models.Productos>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await productoservices.Listar(p => p.ProductoId > 0);
+    }
+
+    private void CrearProducto()
+    {
+        NavigationManager.NavigateTo("/Productos/CreateProducto");
+    }
+
+    private void IrACarritoProducto()
+    {
+        NavigationManager.NavigateTo("/Productos/CarritoProducto");
+    }
+}
