@@ -1,0 +1,105 @@
+﻿@page "/Carrito/IndexCarrito"
+@using ProyectoFinalAp1.Models
+@inject CarritoService carritoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Carrito de Compras</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title">Carrito de Compras</h5>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="text-center">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    @if (carritoItems == null || !carritoItems.Any())
+                    {
+                        <tr>
+                            <td colspan="5">No hay productos en el carrito.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in carritoItems)
+                        {
+                            <tr>
+                                <td>@item.Producto.Nombre</td>
+                                <td>@item.Cantidad</td>
+                                <td>@item.Producto.Precio?.ToString("C") ?? "N/A"</td>
+                                <td>@(item.Cantidad * (item.Producto.Precio ?? 0)).ToString("C")</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => EliminarDelCarrito(item.CarritoId)">
+                                        🗑 Eliminar
+                                    </button>
+                                    <button class="btn btn-success btn-sm" @onclick="() => ComprarProducto(item.CarritoId)">
+                                        ✅ Comprar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer text-center">
+            <h5>Total: @totalCarrito.ToString("C")</h5>
+            <button class="btn btn-primary" @onclick="ComprarTodo">
+                🛒 Comprar Todo
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Carrito> carritoItems = new List<Carrito>();
+    private decimal totalCarrito = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCarrito();
+    }
+
+    private async Task CargarCarrito()
+    {
+        carritoItems = await carritoService.ObtenerCarrito();
+        totalCarrito = Convert.ToDecimal(await carritoService.CalcularTotalPrecio());
+        StateHasChanged();
+    }
+
+    private async Task EliminarDelCarrito(int carritoId)
+    {
+        if (await carritoService.EliminarDelCarrito(carritoId))
+        {
+            await CargarCarrito();
+        }
+    }
+
+    private async Task ComprarProducto(int carritoId)
+    {
+        if (await carritoService.ComprarProducto(carritoId))
+        {
+            await CargarCarrito();
+        }
+    }
+
+    private async Task ComprarTodo()
+    {
+        if (await carritoService.ComprarCarrito())
+        {
+            await CargarCarrito();
+        }
+    }
+}
