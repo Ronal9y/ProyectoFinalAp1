@@ -1,0 +1,168 @@
+﻿@page "/Empleados/Index"
+@using ProyectoFinalAp1.Services
+@inject EmpleadoService empleadoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Empleados</PageTitle>
+
+<div class="card shadow-lg">
+    <div class="card-header bg-white text-center text-white py-3 rounded">
+        <h3 class="font-weight-bold text-black">Registro de Empleados</h3>
+    </div>
+
+    <div class="col-md-6 d-flex align-items-end">
+        <div class="w-50 pe-2">
+            <label for="Desde" class="form-label">Desde:</label>
+            <InputDate class="form-control" @bind-Value="Desde" />
+        </div>
+        <div class="w-50 ps-2">
+            <label for="Hasta" class="form-label">Hasta:</label>
+            <InputDate class="form-control" @bind-Value="Hasta" />
+        </div>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="filtro">
+                <option value="EmpleadoID">EmpleadoId</option>
+                <option value="Nombre">Nombre</option>
+                <option value="Apellidos">Apellidos</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <button class="btn btn-primary" type="button" @onclick="Buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="/Empleados/Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>EmpleadoId</th>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>Email</th>
+                <th>Cargo</th>
+                <th>Fecha De Contratacion</th>
+                <th>Salario</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Listar != null && Listar.Count > 0)
+            {
+                @foreach (var empleado in Listar)
+                {
+                    <tr>
+                        <td>@empleado.EmpleadoId</td>
+                        <td>@empleado.Nombre</td>
+                        <td>@empleado.Apellidos</td>
+                        <td>@empleado.Email</td>
+                        <td>@empleado.Cargo</td>
+                        <td>@empleado.FechaDeContratacion.ToString("dd-MM-yyyy")</td>
+                        <td>@empleado.Salario</td>
+
+                        <td>
+                            <a href="/Empleados/Edit/@empleado.EmpleadoId" class="btn btn-outline-success">
+                                <i class="bi bi-pencil-square fs-4"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="/Empleados/Delete/@empleado.EmpleadoId" class="btn btn-outline-danger">
+                                <i class="bi bi-trash-fill fs-4"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                }
+                <tr>
+                    <td colspan="5" class="text-end fw-bold">Total:</td>
+                    <td class="fw-bold">@TotalSalarios</td>
+                    <td colspan="2"></td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8">No se encontraron resultados</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="card-footer d-flex justify-content-between">
+        <p>Conteo: @Listar.Count</p>
+    </div>
+</div>
+
+@code {
+
+    public List<Empleados> Listar { get; set; } = new List<Empleados>();
+    public string filtro { get; set; } = "EmpleadoID";
+    public string valorFiltro { get; set; } = string.Empty;
+    public double TotalSalarios { get; set; } = 0;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    public async Task Buscar()
+    {
+
+        var listaFiltrada = await empleadoService.Listar(p => true);
+
+        if (Desde.HasValue && Hasta.HasValue)
+        {
+            listaFiltrada = listaFiltrada
+                .Where(m => m.FechaDeContratacion >= Desde.Value && m.FechaDeContratacion <= Hasta.Value)
+                .ToList();
+        }
+
+        if (!string.IsNullOrEmpty(valorFiltro))
+        {
+            if (filtro == "EmpleadoID" && int.TryParse(valorFiltro, out int empleadoID))
+            {
+                listaFiltrada = listaFiltrada.Where(m => m.EmpleadoId == empleadoID).ToList();
+            }
+            else if (filtro == "Nombre")
+            {
+                listaFiltrada = listaFiltrada
+                    .Where(m => m.Nombre.ToLower().Contains(valorFiltro.ToLower()))
+                    .ToList();
+            }
+            else if (filtro == "Apellidos")
+            {
+                listaFiltrada = listaFiltrada
+                    .Where(m => m.Apellidos.ToLower().Contains(valorFiltro.ToLower()))
+                    .ToList();
+            }
+        }
+
+        Listar = listaFiltrada;
+        TotalSalarios = Listar.Sum(m => m.Salario);
+    }
+
+
+    private async Task CargarDatos()
+    {
+        Listar = await empleadoService.Listar(s => true);
+        TotalSalarios = await empleadoService.ObtenerTotalSalarios();
+    }
+
+}
