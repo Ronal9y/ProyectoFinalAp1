@@ -9,7 +9,7 @@ public class Mascotas
     public int MascotaId { get; set; }
 
     [Required(ErrorMessage = "El campo Nombre es obligatorio.")]
-    public string? Nombre { get; set; }
+
 
     [Required(ErrorMessage = "El campo Tipo es obligatorio.")]
     public string? Tipo { get; set; }
