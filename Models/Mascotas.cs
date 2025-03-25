@@ -8,9 +8,6 @@ public class Mascotas
     [Key]
     public int MascotaId { get; set; }
 
-    [Required(ErrorMessage = "El campo Nombre es obligatorio.")]
-
-
     [Required(ErrorMessage = "El campo Tipo es obligatorio.")]
     public string? Tipo { get; set; }
 

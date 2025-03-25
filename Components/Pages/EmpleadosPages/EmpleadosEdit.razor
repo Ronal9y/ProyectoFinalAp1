@@ -1,0 +1,150 @@
+﻿@page "/Empleados/Edit"
+@page "/Empleados/Edit/{EmpleadoId:int}"
+@using ProyectoFinalAp1.Services
+@inject EmpleadoService empleadoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="Empleado" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="card-header bg-primary text-center text-white py-2 rounded">
+        <h3 style="font-weight: bold;" class="font-weight-bold">Modificar Datos Del Empleado</h3>
+    </div>
+
+    <div class="card-body">
+
+        @*EmpleadoId*@
+        <div class="mb-3">
+            <label for="EmpleadoId" class="form-label">EmpleadoId:</label>
+            <InputNumber @bind-Value="Empleado.EmpleadoId" class="form-control" />
+        </div>
+
+        @*Nombre*@
+        <div class="mb-3">
+            <label for="Nombre" class="form-label">Nombre:</label>
+            <InputText @bind-Value="Empleado.Nombre" class="form-control" />
+        </div>
+        
+        @*Apellidos*@
+        <div class="mb-3">
+            <label for="Apellidos" class="form-label">Apellidos:</label>
+            <InputText @bind-Value="Empleado.Apellidos" class="form-control" />
+        </div>
+
+        @*Email*@
+        <div class="mb-3">
+            <label for="Email" class="form-label">Email:</label>
+            <InputText @bind-Value="Empleado.Email" class="form-control" />
+        </div>
+        
+        @*Cargo*@
+        <div class="mb-3">
+            <label for="Cargo" class="form-label">Cargo:</label>
+            <InputText @bind-Value="Empleado.Cargo" class="form-control" />
+        </div>
+
+        @*Fecha de contratacion*@
+        <div class="mb-3">
+            <label for="Fecha" class="form-label">Fecha:</label>
+            <InputDate @bind-Value="Empleado.FechaDeContratacion" class="form-control" />
+        </div>
+
+        @*Salario*@
+        <div class="mb-3">
+            <label for="Monto" class="form-label">Salario:</label>
+            <InputNumber @bind-Value="Empleado.Salario" class="form-control" min="0" />
+        </div>
+
+    </div>
+
+    <div class="card-footer d-flex justify-content-lg-center text-center">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary ml-2" @onclick="Nuevo"><span class="bi bi-plus-circle"></span>Nuevo</button>
+            <button type="button" class="btn btn-outline-success ml-2" @onclick="Guardar"><span class="bi bi-check-circle-fill"></span>Guardar</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="Retroceder"><span class="bi bi-arrow-bar-left"></span>Retroceder</button>
+
+        </div>
+
+    </div>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int EmpleadoId { get; set; }
+    public Empleados Empleado { get; set; } = new Empleados();
+    public bool existe = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EmpleadoId > 0)
+        {
+            var encontrado = await empleadoService.Buscar(EmpleadoId);
+            if (encontrado != null)
+            {
+                Empleado = encontrado;
+            }
+        }
+    }
+
+
+    public async Task Buscar()
+    {
+
+        existe = false;
+        var empleadoEncontrado = await empleadoService.Buscar(EmpleadoId);
+        if (empleadoEncontrado != null)
+        {
+            Empleado = empleadoEncontrado;
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task Nuevo()
+    {
+        Empleado = new Empleados();
+
+    }
+
+    public async Task<bool> Validar()
+    {
+        var listaEmpleados = await empleadoService.Listar(m => m.Nombre.ToLower() == Empleado.Nombre.ToLower()
+        && m.EmpleadoId != Empleado.EmpleadoId);
+        existe = listaEmpleados.Any();
+        return !existe;
+    }
+
+
+    public async Task Retroceder()
+    {
+        navigationManager.NavigateTo("/Empleados/Index");
+    }
+
+    public async Task Guardar()
+    {
+
+        if (Empleado.Salario < 0)
+        {
+            return;
+        }
+
+        var existeEmpleado = await empleadoService.Listar(m => m.Nombre.ToLower() == Empleado.Nombre.ToLower()
+            && m.EmpleadoId != Empleado.EmpleadoId);
+
+        if (existeEmpleado.Any())
+        {
+            return;
+        }
+
+        var resultado = await empleadoService.Guardar(Empleado);
+        if (resultado)
+        {
+            await Retroceder();
+        }
+    }
+
+}
