@@ -27,6 +27,7 @@ namespace ProyectoFinalAp1
 
             builder.Services.AddScoped<CarritoService>();
             builder.Services.AddScoped<ProductoService>();
+            builder.Services.AddScoped<EmpleadoService>();
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
