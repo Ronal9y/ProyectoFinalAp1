@@ -14,11 +14,6 @@ public class Citas
 
     [Required(ErrorMessage = "´Debe introducir el nombre de su mascota.")]
     public string? NombreMascota { get; set; }  
-
-    public int MascotaId { get; set; }
-    [ForeignKey("MascotaId")]
-    public virtual Mascotas Mascota { get; set; }
-
     public int EmpleadoId { get; set; }
     [ForeignKey("EmpleadoId")]
     public virtual Empleados Empleado { get; set; }
