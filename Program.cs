@@ -1,12 +1,13 @@
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using ProyectoFinalAp1.Components;
-using ProyectoFinalAp1.Components.Account;
-using ProyectoFinalAp1.Data;
-using ProyectoFinalAp1.Services;
-using ProyectoFinalAp1.Models;
+global using Microsoft.AspNetCore.Components.Authorization;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Configuration;
+global using ProyectoFinalAp1.Components;
+global using ProyectoFinalAp1.Components.Account;
+global using ProyectoFinalAp1.Data;
+global using ProyectoFinalAp1.Services;
+global using ProyectoFinalAp1.Models;
+global using Microsoft.EntityFrameworkCore.Design;
 
 namespace ProyectoFinalAp1
 {
