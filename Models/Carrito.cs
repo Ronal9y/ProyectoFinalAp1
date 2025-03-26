@@ -6,11 +6,13 @@ namespace ProyectoFinalAp1.Models;
 public class Carrito
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int CarritoId { get; set; }
 
     [Required]
     public int ProductoId { get; set; }
     [ForeignKey("ProductoId")]
+
     public virtual Productos Producto { get; set; }
 
     [Required(ErrorMessage = "La cantidad es obligatoria.")]
