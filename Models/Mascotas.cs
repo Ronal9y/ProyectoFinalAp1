@@ -29,11 +29,8 @@ public class Mascotas
     [Url(ErrorMessage = "Debe proporcionar una URL válida para la foto del producto.")]
     public string ImageURL { get; set; }
     [Required(ErrorMessage = "este campo es obligatoria.")]
-    public int UsuarioId { get; set; }
 
-    [ForeignKey("UsuarioId")]
-    public virtual Usuarios Usuario { get; set; }
-
+ 
     public virtual ICollection<Citas> Cita { get; set; } = new List<Citas>();
 
 }
