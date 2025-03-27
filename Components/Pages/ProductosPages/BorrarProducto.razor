@@ -1,0 +1,116 @@
+﻿@page "/Producto/DeleteProducto/{ProductoId:int}"
+@inject ProductoService productoService
+@inject NavigationManager navigationManager
+
+<PageTitle>Eliminar Producto</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title">Eliminar Producto</h5>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @ErrorMessage
+                </div>
+            }
+
+            @if (producto != null)
+            {
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre del Producto:</strong></label>
+                    <p>@producto.Nombre</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripción:</strong></label>
+                    <p>@producto.Descripcion</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Precio:</strong></label>
+                    <p>@producto.Precio.ToString("C")</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad en Stock:</strong></label>
+                    <p>@producto.Stock</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Proveedor:</strong></label>
+                    <p>@producto.Proveedores?.Nombre</p>
+                </div>
+
+                <div class="text-center">
+                    <button class="btn btn-danger" @onclick="DeleteProducto">
+                        <span class="bi bi-trash"></span> Eliminar Producto
+                    </button>
+                    <a href="/Producto/Index" class="btn btn-secondary">
+                        <span class="bi bi-arrow-left"></span> Volver al listado
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p class="text-center">El producto no existe.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int ProductoId { get; set; }
+      <!-- Recibe el ProductoId de la URL -->
+    public ProyectoFinalAp1.Models.Productos producto { get; set; } = new ProyectoFinalAp1.Models.Productos();
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducto();
+    }
+
+    private async Task LoadProducto()
+    {
+        try
+        {
+            // Cargar el producto por ID
+            producto = await productoService.Buscar(ProductoId);
+
+            if (producto == null)
+            {
+                ErrorMessage = "Producto no encontrado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Ocurrió un error al cargar el producto: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteProducto()
+    {
+        try
+        {
+            // Llamamos al servicio para eliminar el producto
+            bool result = await productoService.Eliminar(ProductoId);
+
+            if (result)
+            {
+                // Redirigir al listado después de eliminar
+                navigationManager.NavigateTo("/Producto/Index");
+            }
+            else
+            {
+                ErrorMessage = "No se pudo eliminar el producto. Por favor, inténtalo nuevamente.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Ocurrió un error al intentar eliminar el producto: {ex.Message}";
+        }
+    }
+}
