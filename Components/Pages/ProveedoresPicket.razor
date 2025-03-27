@@ -1,0 +1,53 @@
+﻿@using ProyectoFinalAp1.Models
+
+<div class="col-auto input-group align-items-center">
+    <InputSelect class="form-select" @bind-Value="ProveedorSeleccionado">
+        <option disabled selected>--- Seleccione un Proveedor ---</option>
+        @foreach (var proveedor in Proveedores)
+        {
+            <option value="@proveedor.Nombre">@proveedor.Nombre</option>
+        }
+    </InputSelect>
+
+    <button type="button" class="btn btn-success bi bi-floppy" @onclick="ElegirProveedor">Agregar detalle</button>
+</div>
+
+@if (!string.IsNullOrEmpty(MensajeError))
+{
+    <div class="alert alert-danger">@MensajeError</div>
+}
+
+@code {
+    [Parameter]
+    public List<Proveedores> Proveedores { get; set; } = new();
+
+    private string ProveedorSeleccionado { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<Proveedores> ProveedorSeleccionadoCallback { get; set; }
+
+    public string? MensajeError { get; set; }
+
+    private async Task ElegirProveedor()
+    {
+        MensajeError = null;
+
+        if (!string.IsNullOrWhiteSpace(ProveedorSeleccionado))
+        {
+            var proveedorElegido = Proveedores.SingleOrDefault(p => p.Nombre == ProveedorSeleccionado);
+
+            if (proveedorElegido != null)
+            {
+                await ProveedorSeleccionadoCallback.InvokeAsync(proveedorElegido);
+            }
+            else
+            {
+                MensajeError = "Proveedor no encontrado";
+            }
+        }
+        else
+        {
+            MensajeError = "Debe seleccionar un proveedor válido";
+        }
+    }
+}
