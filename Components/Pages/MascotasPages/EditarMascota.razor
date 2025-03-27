@@ -1,0 +1,216 @@
+﻿@page "/Mascota/EditarMascota/{MascotaId:int}"
+@inject MascotasService mascotasService
+@inject ProveedoresService proveedoresService
+@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Editar Mascota</PageTitle>
+
+<EditForm Model="@mascota" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Editar Mascota</h5>
+            </div>
+
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @ErrorMessage
+                    </div>
+                }
+
+                @* Tipo *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Tipo de mascota</strong></label>
+                    <InputText class="form-control" @bind-Value="@mascota.Tipo" />
+                    <ValidationMessage For="@(() => mascota.Tipo)" />
+                </div>
+
+                @* Raza *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Raza</strong></label>
+                    <InputText class="form-control" @bind-Value="@mascota.Raza" />
+                    <ValidationMessage For="@(() => mascota.Raza)" />
+                </div>
+                
+                @* Fecha de nacimiento *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha De Nacimiento</strong></label>
+                    <InputDate class="form-control" @bind-Value="@mascota.FechaDeNacimiento" />
+                    <ValidationMessage For="@(() => mascota.FechaDeNacimiento)" />
+                </div>
+
+                @* Imagen URL - Sección modificada *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Imagen del Producto</strong></label>
+
+                    @if (!string.IsNullOrEmpty(mascota.ImageURL))
+                    {
+                        <div class="mb-2">
+                            <img src="@mascota.ImageURL" class="img-thumbnail" style="max-height: 200px;" />
+                        </div>
+                    }
+
+                    <div class="d-flex gap-2">
+                        <InputFile OnChange="HandleFileUpload" accept="image/*" class="form-control" />
+                        <InputText class="form-control" @bind-Value="@mascota.ImageURL" placeholder="O ingrese URL manual" />
+                    </div>
+                    <small class="text-muted">Puede subir una imagen o ingresar una URL. Formatos: JPG, PNG (Máx. 2MB)</small>
+                    <ValidationMessage For="@(() => mascota.ImageURL)" />
+                </div>
+
+                @* Precio *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Precio</strong></label>
+                    <InputNumber class="form-control" @bind-Value="@mascota.Precio" />
+                    <ValidationMessage For="@(() => mascota.Precio)" />
+                </div>
+
+                @* Cantidad *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad en Stock</strong></label>
+                    <InputNumber class="form-control" @bind-Value="@mascota.Cantidad" />
+                    <ValidationMessage For="@(() => mascota.Cantidad)" />
+                </div>
+
+                @* Proveedor *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Proveedor</strong></label>
+                    <InputSelect class="form-control" @bind-Value="@mascota.ProveedorId">
+                        <option value="">Seleccione un Proveedor</option>
+                        @foreach (var proveedor in ListaProveedores)
+                        {
+                            <option value="@proveedor.ProveedorId">@proveedor.Nombre</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => mascota.ProveedorId)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <button type="button" class="btn btn-secondary" @onclick="VolverAlIndice">
+                    <span class="bi bi-arrow-left"></span> Volver al Índice
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <span class="bi bi-floppy"></span> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] 
+    public int MascotaId { get; set; }
+    public ProyectoFinalAp1.Models.Mascotas mascota { get; set; } = new ProyectoFinalAp1.Models.Mascotas();
+    public List<ProyectoFinalAp1.Models.Proveedores> ListaProveedores { get; set; } = new List<ProyectoFinalAp1.Models.Proveedores>();
+    public string ErrorMessage { get; set; } = string.Empty;
+    private const int MaxFileSize = 2 * 1024 * 1024; // 2MB
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaProveedores = await proveedoresService.ListarProveedores();
+        await LoadProducto();
+    }
+
+    private async Task LoadProducto()
+    {
+        try
+        {
+            mascota = await mascotasService.Buscar(MascotaId);
+
+            if (mascota == null)
+            {
+                navigationManager.NavigateTo("/Mascota/Index");
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Ocurrió un error al cargar el producto: {ex.Message}";
+        }
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+
+            // Validar tamaño
+            if (file.Size > MaxFileSize)
+            {
+                ErrorMessage = "El archivo es demasiado grande (Máx. 2MB)";
+                return;
+            }
+
+            // Validar tipo de archivo
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(file.Name).ToLower();
+
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                ErrorMessage = "Formato de imagen no soportado. Use JPG, PNG o GIF";
+                return;
+            }
+
+            // Crear nombre único para el archivo
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var folderPath = Path.Combine("wwwroot", "uploads", "productos");
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), folderPath);
+
+            // Crear directorio si no existe
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+
+            // Guardar archivo
+            var path = Path.Combine(fullPath, fileName);
+            await using var stream = new FileStream(path, FileMode.Create);
+            await file.OpenReadStream(MaxFileSize).CopyToAsync(stream);
+
+            // Asignar URL relativa al modelo
+            mascota.ImageURL = $"/uploads/mascotas/{fileName}";
+            ErrorMessage = string.Empty;
+
+            // Forzar actualización de la vista
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al subir la imagen: {ex.Message}";
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            if (await mascotasService.Guardar(mascota))
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Mascota actualizada correctamente");
+                navigationManager.NavigateTo("/Mascota/Index");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ocurrió un error inesperado. Por favor, intenta nuevamente.";
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    private void VolverAlIndice()
+    {
+        navigationManager.NavigateTo("/Mascota/Index");
+    }
+}
