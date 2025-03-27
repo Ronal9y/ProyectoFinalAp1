@@ -1,0 +1,122 @@
+﻿@page "/Mascotas/DeleteMascota/{MascotaId:int}"
+@inject MascotasService mascotasService
+@inject NavigationManager navigationManager
+
+<PageTitle>Eliminar Mascota</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title">Eliminar Mascota</h5>
+        </div>
+
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @ErrorMessage
+                </div>
+            }
+
+            @if (mascota != null)
+            {
+                <div class="mb-3">
+                    <label class="form-label"><strong>Tipo de Mascota:</strong></label>
+                    <p>@mascota.Tipo</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Raza:</strong></label>
+                    <p>@mascota.Raza</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha de Nacimiento:</strong></label>
+                    <p>@mascota.FechaDeNacimiento</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Precio:</strong></label>
+                    <p>@mascota.Precio.ToString("C")</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad en Stock:</strong></label>
+                    <p>@mascota.Cantidad</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Proveedor:</strong></label>
+                    <p>@mascota.Proveedores?.Nombre</p>
+                </div>
+
+                <div class="text-center">
+                    <button class="btn btn-danger" @onclick="DeleteMascota">
+                        <span class="bi bi-trash"></span> Eliminar Mascota
+                    </button>
+                    <a href="/Producto/Index" class="btn btn-secondary">
+                        <span class="bi bi-arrow-left"></span> Volver al listado
+                    </a>
+                </div>
+            }
+            else
+            {
+                <p class="text-center">La Mascota no existe.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] 
+    public int MascotaId { get; set; }
+    <!-- Recibe el MascotaId de la URL -->
+    public ProyectoFinalAp1.Models.Mascotas mascota { get; set; } = new ProyectoFinalAp1.Models.Mascotas();
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMascota();
+    }
+
+    private async Task LoadMascota()
+    {
+        try
+        {
+            // Cargar la Mascota por ID
+            mascota = await mascotasService.Buscar(MascotaId);
+
+            if (mascota == null)
+            {
+                ErrorMessage = "Mascota no encontrada.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Ocurrió un error al cargar la mascota: {ex.Message}";
+        }
+    }
+
+    private async Task DeleteMascota()
+    {
+        try
+        {
+            // Llamamos al servicio para eliminar la Mascota
+            bool result = await mascotasService.Eliminar(MascotaId);
+
+            if (result)
+            {
+                // Redirigir al listado después de eliminar
+                navigationManager.NavigateTo("/Mascota/Index");
+            }
+            else
+            {
+                ErrorMessage = "No se pudo eliminar la mascota. Por favor, inténtalo nuevamente.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Ocurrió un error al intentar eliminar la Mascota: {ex.Message}";
+        }
+    }
+}
