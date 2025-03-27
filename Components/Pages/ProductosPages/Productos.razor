@@ -1,4 +1,4 @@
-﻿@page "/Producto/Index"
+﻿@page "/Producto/ComprarProductso"
 @using ProyectoFinalAp1.Services
 @using ProyectoFinalAp1.Models
 @inject ProductoService productoService
@@ -100,7 +100,7 @@
     {
         try
         {
-            Listar = await productoService.Listar(p => true);
+            Listar = await productoService.ListarProducto(p => true);
             foreach (var producto in Listar)
             {
                 producto.CantidadSeleccionada = 1;
@@ -117,7 +117,7 @@
     {
         try
         {
-            var listaFiltrada = await productoService.Listar(p => true);
+            var listaFiltrada = await productoService.ListarProducto(p => true);
 
             if (!string.IsNullOrEmpty(valorFiltro))
             {

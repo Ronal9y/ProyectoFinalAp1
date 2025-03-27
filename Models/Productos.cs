@@ -18,7 +18,7 @@ public class Productos
     public string? Descripcion { get; set; }
 
     [Required(ErrorMessage = "La imagen es obligatoria.")]
-    [Url(ErrorMessage = "Debe proporcionar una URL válida para la foto del producto.")]
+ 
 
     public string? ImagenURL { get; set; }
 
