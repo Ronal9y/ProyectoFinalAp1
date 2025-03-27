@@ -1,0 +1,198 @@
+﻿@page "/Producto/ComprarProducto"
+@inject ProductoService productoService
+@inject ProveedoresService proveedoresService
+@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Reponer Stock</PageTitle>
+
+<EditForm Model="@producto" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Nuevo Producto</h5>
+            </div>
+
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @ErrorMessage
+                    </div>
+                }
+
+                <!-- Campo Nombre (se mantiene igual) -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre del Producto</strong></label>
+                    <InputText class="form-control" @bind-Value="@producto.Nombre" />
+                    <ValidationMessage For="@(() => producto.Nombre)" />
+                </div>
+
+                <!-- Campo Descripción (se mantiene igual) -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripción</strong></label>
+                    <InputText class="form-control" @bind-Value="@producto.Descripcion" />
+                    <ValidationMessage For="@(() => producto.Descripcion)" />
+                </div>
+
+                <!-- Campo Imagen (modificado para permitir subida) -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Imagen del Producto</strong></label>
+
+                    <!-- Vista previa de la imagen -->
+                    @if (!string.IsNullOrEmpty(producto.ImagenURL))
+                    {
+                        <div class="mb-2">
+                            <img src="@producto.ImagenURL" class="img-thumbnail" style="max-height: 200px;" />
+                        </div>
+                    }
+
+                    <!-- Input para subir archivo -->
+                    <InputFile OnChange="HandleFileUpload" accept="image/*" class="form-control mb-2" />
+
+                    <!-- Input para URL manual (se mantiene) -->
+                    <InputText class="form-control" @bind-Value="@producto.ImagenURL" placeholder="O ingrese URL de imagen" />
+
+                    <small class="text-muted">Formatos aceptados: JPG, PNG, GIF (Máx. 2MB)</small>
+                    <ValidationMessage For="@(() => producto.ImagenURL)" />
+                </div>
+
+                <!-- Campo Precio (se mantiene igual) -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Precio</strong></label>
+                    <InputNumber class="form-control" @bind-Value="@producto.Precio" />
+                    <ValidationMessage For="@(() => producto.Precio)" />
+                </div>
+
+                <!-- Campo Stock (se mantiene igual) -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad en Stock</strong></label>
+                    <InputNumber class="form-control" @bind-Value="@producto.Stock" />
+                    <ValidationMessage For="@(() => producto.Stock)" />
+                </div>
+
+                <!-- Campo Tipo de Categoría (se mantiene igual) -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Tipo de Categoría</strong></label>
+                    <InputText class="form-control" @bind-Value="@producto.TipoCategoria" />
+                    <ValidationMessage For="@(() => producto.TipoCategoria)" />
+                </div>
+
+                <!-- Campo Proveedor (se mantiene igual) -->
+                <div class="mb-3">
+                    <label class="form-label"><strong>Proveedor</strong></label>
+                    <InputSelect class="form-control" @bind-Value="@producto.ProveedorId">
+                        <option value="">Seleccione un Proveedor</option>
+                        @foreach (var proveedor in ListaProveedores)
+                        {
+                            <option value="@proveedor.ProveedorId">@proveedor.Nombre</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => producto.ProveedorId)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <button class="btn btn-secondary" @onclick="VolverAlIndice">
+                    <span class="bi bi-arrow-left"></span> Volver al Índice
+                </button>
+                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    // Propiedades existentes (se mantienen igual)
+    public ProyectoFinalAp1.Models.Productos producto { get; set; } = new ProyectoFinalAp1.Models.Productos();
+    public List<ProyectoFinalAp1.Models.Proveedores> ListaProveedores { get; set; } = new List<ProyectoFinalAp1.Models.Proveedores>();
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    // Método para subir imágenes (nuevo)
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+
+            // Validar tamaño (2MB máximo)
+            if (file.Size > 2 * 1024 * 1024)
+            {
+                ErrorMessage = "La imagen es demasiado grande (Máximo 2MB)";
+                return;
+            }
+
+            // Validar tipo de archivo
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(file.Name).ToLower();
+
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                ErrorMessage = "Formato de imagen no soportado. Use JPG, PNG o GIF";
+                return;
+            }
+
+            // Crear nombre único para el archivo
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var folderPath = Path.Combine("wwwroot", "uploads", "productos");
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), folderPath);
+
+            // Crear directorio si no existe
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+
+            // Guardar archivo
+            var path = Path.Combine(fullPath, fileName);
+            await using var stream = new FileStream(path, FileMode.Create);
+            await file.OpenReadStream().CopyToAsync(stream);
+
+            // Asignar URL relativa al modelo
+            producto.ImagenURL = $"/uploads/productos/{fileName}";
+            ErrorMessage = string.Empty;
+
+            // Forzar actualización de la vista
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al subir la imagen: {ex.Message}";
+        }
+    }
+
+    // Métodos existentes (se mantienen igual)
+    protected override async Task OnInitializedAsync()
+    {
+        ListaProveedores = await proveedoresService.ListarProveedores();
+    }
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            if (await productoService.Guardar(producto))
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Producto guardado correctamente");
+                navigationManager.NavigateTo("/Producto/Index");
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ocurrió un error inesperado. Por favor, intenta nuevamente.";
+        }
+    }
+
+    private void VolverAlIndice()
+    {
+        navigationManager.NavigateTo("/Producto/Index");
+    }
+}
