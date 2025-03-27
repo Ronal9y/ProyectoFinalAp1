@@ -31,6 +31,7 @@ public class Usuarios
     [EmailAddress(ErrorMessage = "Debe ingresar un correo electrónico válido.")]
     public string? Email { get; set; }
 
+    public virtual ICollection<CarritoMascotas> CarritoMascotas { get; set; } = new List<CarritoMascotas>();
     public virtual ICollection<Mascotas> Mascota { get; set; } = new List<Mascotas>();
     public virtual ICollection<Carrito> Carritos { get; set; } = new List<Carrito>();
 }
