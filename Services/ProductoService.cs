@@ -69,16 +69,12 @@ public class ProductoService(IDbContextFactory<ApplicationDbContext> DbFactory)
 
     }
 
-    public async Task<List<Productos>> Listar(Expression<Func<Productos, bool>> criterio = null)
+    public async Task<List<Productos>> ListarProducto(Expression<Func<Productos, bool>>? filtro = null)
     {
-        await using var contexto = await _dbFactory.CreateDbContextAsync();
-        if (criterio == null)
-        {
-            return await contexto.Productos.AsNoTracking().ToListAsync();
-        }
-        return await contexto.Productos.AsNoTracking().Where(criterio).ToListAsync();
+        await using var contexto = await DbFactory.CreateDbContextAsync();
+        var query = contexto.Productos.AsNoTracking();
+        return filtro == null ? await query.ToListAsync() : await query.Where(filtro).ToListAsync();
     }
-
     public async Task<int> ObtenerTotalProductosEnCarrito()
     {
         await using var contexto = await _dbFactory.CreateDbContextAsync();
