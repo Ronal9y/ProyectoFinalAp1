@@ -1,0 +1,195 @@
+﻿@page "/Mascota/Index"
+@using System.Linq.Expressions
+@inject MascotasService mascotasService
+@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Índice de Productos</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Listado de Mascotas</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Buscar por:</strong></label>
+                    <div class="input-group">
+                        <select class="form-select" @bind="CriterioBusqueda">
+                            <option value="Todos">Todos</option>
+                            <option value="Id">ID</option>
+                            <option value="Tipo">Tipo</option>
+                            <option value="Raza">Raza</option>
+                        </select>
+                        @if (CriterioBusqueda == "Id")
+                        {
+                            <input type="number" class="form-control" @bind="IdBusqueda" placeholder="ID de la mascota" />
+                        }
+                        else if (CriterioBusqueda == "Tipo")
+                        {
+                            <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Tipo de Mascota" />
+                        }
+                        else if (CriterioBusqueda == "Raza")
+                        {
+                            <input type="text" class="form-control" @bind="CategoriaBusqueda" placeholder="Raza de la Mascota" />
+                        }
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Filtrar por cantidad:</strong></label>
+                    <div class="input-group">
+                        <InputNumber class="form-control" @bind-Value="CantidadMinima" placeholder="Mínimo" />
+                        <span class="input-group-text">-</span>
+                        <InputNumber class="form-control" @bind-Value="CantidadMaxima" placeholder="Máximo" />
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary me-2" @onclick="BuscarMascotas">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <button class="btn btn-secondary" @onclick="LimpiarFiltros">
+                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+
+            @if (!mascotas.Any())
+            {
+                <div class="alert alert-warning text-center">No se encontraron Mascotas con los criterios especificados</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th>ID</th>
+                                <th>Tipo</th>
+                                <th>Raza</th>
+                                <th>Fecha de Nacimiento</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Imagen</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mascota in mascotas)
+                            {
+                                <tr>
+                                    <td>@mascota.MascotaId</td>
+                                    <td>@mascota.Tipo</td>
+                                    <td>@(mascota.Raza?.Length > 30 ? mascota.Raza.Substring(0, 30) + "..." : mascota.Raza)</td>
+                                    <td>@mascota.FechaDeNacimiento</td>
+                                    <td>@mascota.Precio.ToString("C")</td>
+                                    <td>@mascota.Cantidad</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(mascota.ImageURL))
+                                        {
+                                            <img src="@mascota.ImageURL" style="width: 50px; height: 50px;" class="img-thumbnail" />
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin imagen</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => EditarMascota(mascota.MascotaId)">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(mascota.MascotaId)">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer text-center">
+            <button class="btn btn-success" @onclick="NuevaMascota">
+                <i class="bi bi-plus-circle"></i> Agregar Nueva Mascota
+            </button>
+            <a class="btn btn-secondary" href="/Mascota/Index">
+                <i class="bi bi-house-door"></i> Volver al índice
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
+    private string CriterioBusqueda = "Todos";
+    private int IdBusqueda;
+    private string TextoBusqueda = string.Empty;
+    private string CategoriaBusqueda = string.Empty;
+    private int? CantidadMinima;
+    private int? CantidadMaxima;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarMascotas();
+    }
+
+    private async Task CargarMascotas()
+    {
+        mascotas = await mascotasService.ListarMascotas();
+    }
+
+    private async Task BuscarMascotas()
+    {
+        if (CriterioBusqueda == "Id" && IdBusqueda > 0)
+        {
+            var mascota = await mascotasService.Buscar(IdBusqueda);
+            mascotas = mascota != null ? new List<ProyectoFinalAp1.Models.Mascotas> { mascota } : new();
+        }
+        else if (CriterioBusqueda == "Tipo")
+        {
+            mascotas = await mascotasService.ListarMascotas(p => p.Tipo.Contains(TextoBusqueda));
+        }
+        else if (CriterioBusqueda == "Raza")
+        {
+            mascotas = await mascotasService.ListarMascotas(p => p.Raza.Contains(CategoriaBusqueda));
+        }
+        else
+        {
+            mascotas = await mascotasService.ListarMascotas();
+        }
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        CriterioBusqueda = "Todos";
+        IdBusqueda = 0;
+        TextoBusqueda = string.Empty;
+        CategoriaBusqueda = string.Empty;
+        CantidadMinima = null;
+        CantidadMaxima = null;
+        await CargarMascotas();
+    }
+
+    private void NuevaMascota()
+    {
+        navigationManager.NavigateTo("/Mascota/ComprarMascota");
+    }
+
+    private void EditarMascota(int id)
+    {
+        navigationManager.NavigateTo($"/Mascota/EditarMascota/{id}");
+    }
+
+    private async Task ConfirmarEliminar(int id)
+    {
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar esta mascota?");
+        if (confirmado)
+        {
+            await mascotasService.Eliminar(id);
+            await CargarMascotas();
+        }
+    }
+}

@@ -55,6 +55,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(p => p.ProveedorId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Mascotas>()
+            .HasOne(p => p.Proveedores)
+            .WithMany()
+            .HasForeignKey(p => p.ProveedorId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Proveedores>().HasData(new List<Proveedores>()
     {
@@ -102,7 +107,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     }
 
 
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
@@ -113,4 +117,3 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
 
 }
-

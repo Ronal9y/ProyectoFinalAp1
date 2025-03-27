@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProyectoFinalAp1.Data;
 using ProyectoFinalAp1.Models;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace ProyectoFinalAp1.Services;
@@ -110,7 +111,7 @@ public class MascotasService(IDbContextFactory<ApplicationDbContext> dbFactory)
     }
 
     // Listar todas las mascotas
-    public async Task<List<Mascotas>> ListarMascotas()
+    public async Task<List<Mascotas>> ListarMascotas(Expression<Func<Mascotas, bool>>? filtro = null)
     {
         await using var contexto = await _dbFactory.CreateDbContextAsync();
         return await contexto.Mascotas
