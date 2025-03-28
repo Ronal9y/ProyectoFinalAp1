@@ -34,7 +34,7 @@ namespace ProyectoFinalAp1
             builder.Services.AddScoped<CitasService>();
             builder.Services.AddScoped<ProveedoresService>();
             builder.Services.AddScoped<ProductoCategoriasService>();
-            builder.Services.AddScoped<UsuariosService>();
+            builder.Services.AddScoped<DonadorService>();
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
