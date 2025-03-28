@@ -26,10 +26,9 @@ public class Mascotas
     public int Cantidad { get; set; }
     [Required(ErrorMessage = "La imagen es obligatoria.")]
     public string ImageURL { get; set; }
-
-    public int ProveedorId { get; set; }
-    [ForeignKey("ProveedorId")]
-    public virtual Proveedores Proveedores { get; set; }
+    public int DonadorId { get; set; }
+    [ForeignKey("DonadorId")]
+    public virtual Donador Donador { get; set; }
 
     public virtual ICollection<CarritoMascotas> CarritoMascotas { get; set; } = new List<CarritoMascotas>();
     public virtual ICollection<Citas> Cita { get; set; } = new List<Citas>();
