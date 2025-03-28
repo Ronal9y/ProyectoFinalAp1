@@ -1,6 +1,6 @@
 ﻿@page "/Mascota/EditarMascota/{MascotaId:int}"
 @inject MascotasService mascotasService
-@inject ProveedoresService proveedoresService
+@inject DonadorService donadoresService
 @inject NavigationManager navigationManager
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
@@ -38,7 +38,7 @@
                     <InputText class="form-control" @bind-Value="@mascota.Raza" />
                     <ValidationMessage For="@(() => mascota.Raza)" />
                 </div>
-                
+
                 @* Fecha de nacimiento *@
                 <div class="mb-3">
                     <label class="form-label"><strong>Fecha De Nacimiento</strong></label>
@@ -79,17 +79,17 @@
                     <ValidationMessage For="@(() => mascota.Cantidad)" />
                 </div>
 
-                @* Proveedor *@
+                @* Donador *@
                 <div class="mb-3">
-                    <label class="form-label"><strong>Proveedor</strong></label>
-                    <InputSelect class="form-control" @bind-Value="@mascota.ProveedorId">
-                        <option value="">Seleccione un Proveedor</option>
-                        @foreach (var proveedor in ListaProveedores)
+                    <label class="form-label"><strong>Donador</strong></label>
+                    <InputSelect class="form-control" @bind-Value="@mascota.DonadorId">
+                        <option value="">Seleccione un Donador</option>
+                        @foreach (var donador in ListaDonadores)
                         {
-                            <option value="@proveedor.ProveedorId">@proveedor.Nombre</option>
+                            <option value="@donador.DonadorId">@donador.Nombre</option>
                         }
                     </InputSelect>
-                    <ValidationMessage For="@(() => mascota.ProveedorId)" />
+                    <ValidationMessage For="@(() => mascota.DonadorId)" />
                 </div>
             </div>
 
@@ -106,20 +106,20 @@
 </EditForm>
 
 @code {
-    [Parameter] 
+    [Parameter]
     public int MascotaId { get; set; }
     public ProyectoFinalAp1.Models.Mascotas mascota { get; set; } = new ProyectoFinalAp1.Models.Mascotas();
-    public List<ProyectoFinalAp1.Models.Proveedores> ListaProveedores { get; set; } = new List<ProyectoFinalAp1.Models.Proveedores>();
+    public List<ProyectoFinalAp1.Models.Donador> ListaDonadores { get; set; } = new List<ProyectoFinalAp1.Models.Donador>();
     public string ErrorMessage { get; set; } = string.Empty;
     private const int MaxFileSize = 2 * 1024 * 1024; // 2MB
 
     protected override async Task OnInitializedAsync()
     {
-        ListaProveedores = await proveedoresService.ListarProveedores();
-        await LoadProducto();
+        ListaDonadores = await donadoresService.Listar();
+        await LoadMascota();
     }
 
-    private async Task LoadProducto()
+    private async Task LoadMascota()
     {
         try
         {
@@ -132,7 +132,7 @@
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Ocurrió un error al cargar el producto: {ex.Message}";
+            ErrorMessage = $"Ocurrió un error al cargar la Mascota: {ex.Message}";
         }
     }
 
@@ -161,7 +161,7 @@
 
             // Crear nombre único para el archivo
             var fileName = $"{Guid.NewGuid()}{fileExtension}";
-            var folderPath = Path.Combine("wwwroot", "uploads", "productos");
+            var folderPath = Path.Combine("wwwroot", "uploads", "mascotas");
             var fullPath = Path.Combine(Directory.GetCurrentDirectory(), folderPath);
 
             // Crear directorio si no existe

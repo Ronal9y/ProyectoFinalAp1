@@ -150,11 +150,11 @@
         }
         else if (CriterioBusqueda == "Tipo")
         {
-            mascotas = await mascotasService.ListarMascotas(p => p.Tipo.Contains(TextoBusqueda));
+            mascotas = await mascotasService.Listar(p => p.Tipo.Contains(TextoBusqueda));
         }
         else if (CriterioBusqueda == "Raza")
         {
-            mascotas = await mascotasService.ListarMascotas(p => p.Raza.Contains(CategoriaBusqueda));
+            mascotas = await mascotasService.Listar(p => p.Raza.Contains(CategoriaBusqueda));
         }
         else
         {
