@@ -1,0 +1,136 @@
+﻿@page "/Citas/Create"
+@using ProyectoFinalAp1.Services
+@inject CitasService citasService
+@inject EmpleadoService empleadoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<EditForm Model="Cita" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="card-header bg-primary text-center text-white py-2 rounded">
+        <h3 style="font-weight: bold;" class="font-weight-bold">Crear Cita</h3>
+    </div>
+
+    <div class="card-body">
+
+      
+        <div class="mb-3">
+            <label for="CitaId" class="form-label">CitaId:</label>
+            <InputNumber @bind-Value="Cita.CitaId" class="form-control" disabled />
+        </div>
+
+      
+        <div class="mb-3">
+            <label for="Nombre" class="form-label">Nombre:</label>
+            <InputText @bind-Value="Cita.Nombre" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="Fecha" class="form-label">Fecha:</label>
+            <InputDate @bind-Value="Cita.Fecha" class="form-control" />
+        </div>
+
+       
+        <div class="mb-3">
+            <label for="Descripcion" class="form-label">Descripción:</label>
+            <InputText @bind-Value="Cita.Descripcion" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="NombreMascota" class="form-label">Nombre de la Mascota:</label>
+            <InputText @bind-Value="Cita.NombreMascota" class="form-control" />
+        </div>
+
+    
+        <div class="mb-3">
+            <label for="EmpleadoId" class="form-label">Empleado:</label>
+            <select @bind="Cita.EmpleadoId" class="form-select">
+                <option value="">Seleccione un empleado</option>
+                @foreach (var empleado in EmpleadosList)
+                {
+                    <option value="@empleado.EmpleadoId">@empleado.Nombre</option>
+                }
+            </select>
+        </div>
+
+    </div>
+
+    <div class="card-footer d-flex justify-content-lg-center text-center">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary ml-2" @onclick="Nuevo"><span class="bi bi-plus-circle"></span>Nuevo</button>
+            <button type="button" class="btn btn-outline-success ml-2" @onclick="Guardar"><span class="bi bi-check-circle-fill"></span>Guardar</button>
+            <button type="button" class="btn btn-outline-danger" @onclick="Retroceder"><span class="bi bi-arrow-bar-left"></span>Retroceder</button>
+        </div>
+    </div>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int CitaId { get; set; }
+    public Citas Cita { get; set; } = new Citas();
+    public bool existe = false;
+    public List<Empleados> EmpleadosList { get; set; } = new List<Empleados>();
+
+    // Obtener empleados al cargar la página
+    protected override async Task OnInitializedAsync()
+    {
+        EmpleadosList = await empleadoService.ListarEmpleado(); // Utilizando el servicio EmpleadoService
+        if (CitaId > 0)
+        {
+            await BuscarCita();
+        }
+    }
+
+    public async Task Nuevo()
+    {
+        Cita = new Citas();
+        existe = false;
+    }
+
+    public async Task BuscarCita()
+    {
+        var cita = await citasService.Buscar(CitaId);
+        if (cita != null)
+        {
+            Cita = cita;
+        }
+        else
+        {
+            Nuevo();
+        }
+    }
+
+    public async Task<bool> Validar()
+    {
+        var existeCita = await citasService.ExisteCita(Cita.Nombre, Cita.Fecha, Cita.CitaId);
+        existe = existeCita;
+        return !existe;
+    }
+
+    public async Task Guardar()
+    {
+        if (Cita.Fecha < DateTime.Now)
+        {
+            return; // No permitir guardar una cita en el pasado
+        }
+
+        if (!await Validar())
+        {
+            return; // Validación de nombre y fecha
+        }
+
+        var resultado = await citasService.Guardar(Cita);
+        if (resultado)
+        {
+            Nuevo();
+            Retroceder();
+        }
+    }
+
+    public void Retroceder()
+    {
+        navigationManager.NavigateTo("/Citas/Index");
+    }
+}
