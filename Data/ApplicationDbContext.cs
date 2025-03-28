@@ -16,7 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Empleados> Empleados { get; set; }
     public DbSet<Proveedores> Proveedores { get; set; }
     public DbSet<Carrito> Carrito { get; set; }
-    public DbSet<Usuarios> Usuarios { get; set; }
+    public DbSet<Donador> Donador { get; set; }
     public DbSet<CarritoMascotas> CarritoMascotas { get; set; }
 
 
@@ -55,11 +55,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(p => p.ProveedorId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Mascotas>()
-            .HasOne(p => p.Proveedores)
-            .WithMany()
-            .HasForeignKey(p => p.ProveedorId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Proveedores>().HasData(new List<Proveedores>()
     {
@@ -104,13 +99,42 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
 
 
+        modelBuilder.Entity<Donador>().HasData(new List<Donador>()
+        {
+            new Donador() { DonadorId = 1, Nombre = "Nadie", Direccion = "N/A", Telefono = "0", Email = "N/A" },
+            new Donador() { DonadorId = 2, Nombre = "Juan Pérez", Direccion = "Calle 1, Santo Domingo", Telefono = "8095551111", Email = "juanperez@example.com" },
+            new Donador() { DonadorId = 3, Nombre = "María Gómez", Direccion = "Av. Bolívar, Santiago", Telefono = "8095552222", Email = "mariagomez@example.com" },
+            new Donador() { DonadorId = 4, Nombre = "Carlos López", Direccion = "Calle Duarte, La Vega", Telefono = "8095553333", Email = "carloslopez@example.com" },
+            new Donador() { DonadorId = 5, Nombre = "Ana Rodríguez", Direccion = "Calle las Palmas, San Cristóbal", Telefono = "8295554444", Email = "anarodriguez@example.com" },
+            new Donador() { DonadorId = 6, Nombre = "Pedro Sánchez", Direccion = "Av. Independencia, Puerto Plata", Telefono = "8295555555", Email = "pedrosanchez@example.com" },
+            new Donador() { DonadorId = 7, Nombre = "Luis Fernández", Direccion = "Calle Central, Barahona", Telefono = "8495556666", Email = "luisfernandez@example.com" },
+            new Donador() { DonadorId = 8, Nombre = "Gloria Martínez", Direccion = "Calle Norte, Higuey", Telefono = "8495557777", Email = "gloriamartinez@example.com" },
+            new Donador() { DonadorId = 9, Nombre = "José Domínguez", Direccion = "Calle Este, Moca", Telefono = "8095558888", Email = "josedominguez@example.com" },
+            new Donador() { DonadorId = 10, Nombre = "Elena Vargas", Direccion = "Av. Sur, San Pedro", Telefono = "8295559999", Email = "elenavargas@example.com" },
+            new Donador() { DonadorId = 11, Nombre = "Ricardo Jiménez", Direccion = "Calle Oeste, Bonao", Telefono = "8095550000", Email = "ricardojimenez@example.com" },
+            new Donador() { DonadorId = 12, Nombre = "Sofía Castro", Direccion = "Av. Metropolitana, La Romana", Telefono = "8295561111", Email = "sofiacastro@example.com" },
+            new Donador() { DonadorId = 13, Nombre = "Andrés Herrera", Direccion = "Calle del Sol, Monte Plata", Telefono = "8495562222", Email = "andresherrera@example.com" },
+            new Donador() { DonadorId = 14, Nombre = "Carmen Ortiz", Direccion = "Calle Primavera, Baní", Telefono = "8095563333", Email = "carmenortiz@example.com" },
+            new Donador() { DonadorId = 15, Nombre = "Francisco Medina", Direccion = "Av. Central, Nagua", Telefono = "8295564444", Email = "franciscomedina@example.com" },
+            new Donador() { DonadorId = 16, Nombre = "Diana Pérez", Direccion = "Calle del Mar, Samaná", Telefono = "8495565555", Email = "dianaperez@example.com" },
+            new Donador() { DonadorId = 17, Nombre = "Alberto Ríos", Direccion = "Calle Principal, Azua", Telefono = "8095566666", Email = "albertorios@example.com" },
+            new Donador() { DonadorId = 18, Nombre = "Fernanda Castro", Direccion = "Av. Florida, Cotuí", Telefono = "8295567777", Email = "fernandacastro@example.com" },
+            new Donador() { DonadorId = 19, Nombre = "Esteban Vargas", Direccion = "Calle Sol Naciente, Jarabacoa", Telefono = "8495568888", Email = "estebanvargas@example.com" },
+            new Donador() { DonadorId = 20, Nombre = "Patricia Herrera", Direccion = "Av. Primavera, Hato Mayor", Telefono = "8095569999", Email = "patriciaherrera@example.com" }
+        });
+
+
+
+
+
+
     }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            .UseSqlServer("workstation id=RegistroDb.mssql.somee.com;packet size=4096;user id=ahb45_SQLLogin_1;pwd=59868mjt41;data source=RegistroDb.mssql.somee.com;persist security info=False;initial catalog=RegistroDb;TrustServerCertificate=True") // Reemplaza con tu cadena de conexión
+            .UseSqlServer("workstation id=RegistroDb.mssql.somee.com;packet size=4096;user id=ahb45_SQLLogin_1;pwd=Maximo134190;data source=RegistroDb.mssql.somee.com;persist security info=False;initial catalog=RegistroDb;TrustServerCertificate=True") // Reemplaza con tu cadena de conexión
             .EnableSensitiveDataLogging(); // Habilitar el registro sensible de datos
     }
 
