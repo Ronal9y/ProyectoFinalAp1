@@ -25,7 +25,7 @@ public class Empleados
 
     [Required(ErrorMessage = "La fecha es obligatoria.")]
     [DataType(DataType.Date)]
-    public DateTime FechaDeContratacion { get; set; }
+    public DateTime FechaDeContratacion { get; set; } = DateTime.Now;
 
     [Required(ErrorMessage = "Este campo es obligatorio")]
     public double Salario { get; set; }
