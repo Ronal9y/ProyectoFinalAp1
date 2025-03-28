@@ -1,0 +1,96 @@
+﻿@page "/Citas/Delete/{CitaId:int}"
+@using ProyectoFinalAp1.Services
+@inject CitasService citasService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Eliminar Cita</PageTitle>
+
+<div class="container">
+    <div class="card shadow-header">
+        <div class="bg-primary text-white text-center py-2 rounded">
+            <h3><strong>Eliminar Cita</strong></h3>
+        </div>
+
+        <div class="card-header text-center">
+            <h3 class="text-danger">¿Está seguro de eliminar esta cita?</h3>
+        </div>
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow-lg">
+                        <div class="card-header">
+                            <h3 class="text-center"><strong>Datos de la Cita</strong></h3>
+                        </div>
+
+                        <div class="card-body">
+                            @if (Cita != null)
+                            {
+                                <div class="border-primary border-2 borde">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <ul class="list-unstyled">
+                                                    <li><strong>CitaId:</strong> @Cita.CitaId</li>
+                                                    <li><strong>Nombre:</strong> @Cita.Nombre</li>
+                                                    <li><strong>Fecha:</strong> @Cita.Fecha.ToShortDateString()</li>
+                                                    <li><strong>Descripción:</strong> @Cita.Descripcion</li>
+                                                    <li><strong>Nombre de la Mascota:</strong> @Cita.NombreMascota</li>
+                                                    <li><strong>Empleado:</strong> @Cita.EmpleadoId</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <p>No se pudo encontrar la cita.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer text-center">
+                <button type="button" class="btn btn-outline-danger" @onclick="EliminarCita"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                <button type="button" class="btn btn-outline-primary" @onclick="Volver"><i class="bi bi-box-arrow-left"></i> Volver</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int CitaId { get; set; }
+
+    public Citas? Cita { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CitaId > 0)
+        {
+            Cita = await citasService.Buscar(CitaId);
+        }
+    }
+
+    public async Task EliminarCita()
+    {
+        if (CitaId == 0 || Cita == null)
+        {
+            return;
+        }
+
+        var resultado = await citasService.Eliminar(CitaId);
+        if (resultado)
+        {
+            Volver();
+        }
+    }
+
+    public void Volver()
+    {
+        navigationManager.NavigateTo("/Citas/Index");
+    }
+}

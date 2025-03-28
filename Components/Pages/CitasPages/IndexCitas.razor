@@ -1,0 +1,152 @@
+﻿@page "/Citas/Index"
+@using ProyectoFinalAp1.Services
+@inject CitasService citaService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Citas</PageTitle>
+
+<div class="card shadow-lg">
+    <div class="card-header bg-white text-center text-white py-3 rounded">
+        <h3 class="font-weight-bold text-black">Registro de Citas</h3>
+    </div>
+
+    <div class="col-md-6 d-flex align-items-end">
+        <div class="w-50 pe-2">
+            <label for="Desde" class="form-label">Desde:</label>
+            <InputDate class="form-control" @bind-Value="Desde" />
+        </div>
+        <div class="w-50 ps-2">
+            <label for="Hasta" class="form-label">Hasta:</label>
+            <InputDate class="form-control" @bind-Value="Hasta" />
+        </div>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="filtro">
+                <option value="CitaId">CitaId</option>
+                <option value="Nombre">Nombre</option>
+                <option value="NombreMascota">Nombre de Mascota</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <button class="btn btn-primary" type="button" @onclick="Buscar">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 text-end">
+            <a href="/Citas/Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Crear
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center">
+        <thead>
+            <tr>
+                <th>CitaId</th>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Nombre Mascota</th>
+                <th>Empleado</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Listar != null && Listar.Count > 0)
+            {
+                @foreach (var cita in Listar)
+                {
+                    <tr>
+                        <td>@cita.CitaId</td>
+                        <td>@cita.Nombre</td>
+                        <td>@cita.Fecha.ToString("dd-MM-yyyy")</td>
+                        <td>@cita.Descripcion</td>
+                        <td>@cita.NombreMascota</td>
+                        <td>@cita.Empleado?.Nombre</td>
+                        <td>
+                            <a href="/Citas/Edit/@cita.CitaId" class="btn btn-outline-success">
+                                <i class="bi bi-pencil-square fs-4"></i>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="/Citas/Delete/@cita.CitaId" class="btn btn-outline-danger">
+                                <i class="bi bi-trash-fill fs-4"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8">No se encontraron resultados</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="card-footer d-flex justify-content-between">
+        <p>Conteo: @Listar.Count</p>
+    </div>
+</div>
+
+@code {
+    public List<Citas> Listar { get; set; } = new List<Citas>();
+    public string filtro { get; set; } = "CitaId";
+    public string valorFiltro { get; set; } = string.Empty;
+    public DateTime? Desde { get; set; }
+    public DateTime? Hasta { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    public async Task Buscar()
+    {
+        var listaFiltrada = await citaService.Listar(p => true);
+
+        if (Desde.HasValue && Hasta.HasValue)
+        {
+            listaFiltrada = listaFiltrada
+                .Where(m => m.Fecha >= Desde.Value && m.Fecha <= Hasta.Value)
+                .ToList();
+        }
+
+        if (!string.IsNullOrEmpty(valorFiltro))
+        {
+            if (filtro == "CitaId" && int.TryParse(valorFiltro, out int citaID))
+            {
+                listaFiltrada = listaFiltrada.Where(m => m.CitaId == citaID).ToList();
+            }
+            else if (filtro == "Nombre")
+            {
+                listaFiltrada = listaFiltrada
+                    .Where(m => m.Nombre.ToLower().Contains(valorFiltro.ToLower()))
+                    .ToList();
+            }
+            else if (filtro == "NombreMascota")
+            {
+                listaFiltrada = listaFiltrada
+                    .Where(m => m.NombreMascota.ToLower().Contains(valorFiltro.ToLower()))
+                    .ToList();
+            }
+        }
+
+        Listar = listaFiltrada;
+    }
+
+    private async Task CargarDatos()
+    {
+        Listar = await citaService.Listar(s => true);
+    }
+}
