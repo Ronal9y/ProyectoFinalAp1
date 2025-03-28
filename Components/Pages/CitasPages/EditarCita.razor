@@ -1,0 +1,171 @@
+﻿@page "/Citas/Edit/{CitaId:int}"
+@using ProyectoFinalAp1.Models
+@using ProyectoFinalAp1.Services
+@inject CitasService citasService
+@inject EmpleadoService empleadoService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Editar Cita</PageTitle>
+
+<EditForm Model="@Cita" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center bg-primary text-white">
+                <h5 class="card-title">Editar Cita</h5>
+            </div>
+
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @ErrorMessage
+                    </div>
+                }
+
+                @* ID de Cita (solo lectura) *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>ID de Cita</strong></label>
+                    <InputNumber class="form-control" @bind-Value="@Cita.CitaId" disabled />
+                </div>
+
+                @* Nombre del Cliente *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre del Cliente</strong></label>
+                    <InputText class="form-control" @bind-Value="@Cita.Nombre" />
+                    <ValidationMessage For="@(() => Cita.Nombre)" />
+                </div>
+
+                @* Fecha de la Cita *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Fecha</strong></label>
+                    <InputDate class="form-control" @bind-Value="@Cita.Fecha" />
+                    <ValidationMessage For="@(() => Cita.Fecha)" />
+                </div>
+
+                @* Descripción *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripción</strong></label>
+                    <InputTextArea class="form-control" @bind-Value="@Cita.Descripcion" />
+                    <ValidationMessage For="@(() => Cita.Descripcion)" />
+                </div>
+
+                @* Nombre de la Mascota *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Nombre de la Mascota</strong></label>
+                    <InputText class="form-control" @bind-Value="@Cita.NombreMascota" />
+                    <ValidationMessage For="@(() => Cita.NombreMascota)" />
+                </div>
+
+                @* Empleado *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Empleado</strong></label>
+                    <select class="form-select" @bind="@Cita.EmpleadoId">
+                        <option value="">Seleccione un empleado</option>
+                        @foreach (var empleado in EmpleadosList)
+                        {
+                            <option value="@empleado.EmpleadoId">@empleado.Nombre</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Cita.EmpleadoId)" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <button type="button" class="btn btn-secondary" @onclick="Retroceder">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <span class="bi bi-floppy"></span> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int CitaId { get; set; }
+    public Citas Cita { get; set; } = new Citas();
+    public List<Empleados> EmpleadosList { get; set; } = new List<Empleados>();
+    public string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        EmpleadosList = await empleadoService.ListarEmpleado();
+
+        if (CitaId > 0)
+        {
+            await BuscarCita();
+        }
+        else
+        {
+            ErrorMessage = "ID de cita no válido";
+        }
+    }
+
+    private async Task BuscarCita()
+    {
+        try
+        {
+            var cita = await citasService.Buscar(CitaId);
+            if (cita != null)
+            {
+                Cita = cita;
+            }
+            else
+            {
+                ErrorMessage = "No se encontró la cita especificada";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al buscar la cita: {ex.Message}";
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            // Validar fecha no sea en el pasado
+            if (Cita.Fecha < DateTime.Now.Date)
+            {
+                ErrorMessage = "No se pueden agendar citas en fechas pasadas";
+                return;
+            }
+
+            // Validar que se haya seleccionado un empleado
+            if (Cita.EmpleadoId <= 0)
+            {
+                ErrorMessage = "Debe seleccionar un empleado";
+                return;
+            }
+
+            // Intenta guardar la cita
+            if (await citasService.Guardar(Cita))
+            {
+                navigationManager.NavigateTo("/Citas/Index");
+            }
+            else
+            {
+                ErrorMessage = "No se pudo guardar la cita";
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error inesperado: {ex.Message}";
+        }
+    }
+
+    private void Retroceder()
+    {
+        navigationManager.NavigateTo("/Citas/Index");
+    }
+}
