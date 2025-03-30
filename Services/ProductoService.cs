@@ -120,4 +120,23 @@ public class ProductoService(IDbContextFactory<ApplicationDbContext> DbFactory)
         return await contexto.Productos.AnyAsync(s => s.ProductoId == id || s.Nombre == nombre);
     }
 
+    // Método para actualizar el stock
+    public async Task<bool> ActualizarStock(int productoId, int cantidad)
+    {
+        await using var contexto = await _dbFactory.CreateDbContextAsync();
+        var producto = await contexto.Productos.FindAsync(productoId);
+
+        if (producto == null) return false;
+
+        producto.Stock += cantidad;
+
+        if (producto.Stock < 0) // No permitir stock negativo
+        {
+            producto.Stock = 0;
+        }
+
+        await contexto.SaveChangesAsync();
+        return true;
+    }
+
 }
