@@ -18,6 +18,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Carrito> Carrito { get; set; }
     public DbSet<Donador> Donador { get; set; }
     public DbSet<CarritoMascotas> CarritoMascotas { get; set; }
+    public DbSet<Factura> Facturas { get; set; }
+    public DbSet<FacturaMascota> FacturaMascotas { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
