@@ -26,37 +26,65 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(modelBuilder);
 
-       
+        base.OnModelCreating(modelBuilder);
+
+        // Configuración de Carrito
         modelBuilder.Entity<Carrito>()
             .HasOne(c => c.Producto)
             .WithMany(p => p.Carritos)
             .HasForeignKey(c => c.ProductoId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Configuración de Factura
+        modelBuilder.Entity<Factura>()
+            .HasOne(f => f.Producto)
+            .WithMany()
+            .HasForeignKey(f => f.ProductoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Factura>()
+          .HasOne(f => f.Carritos)
+          .WithMany(c => c.Facturas)
+          .HasForeignKey(f => f.CarritoId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+        // Configuración de tipos decimal para Factura
+        modelBuilder.Entity<Factura>()
+            .Property(f => f.Total)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<Factura>()
+            .Property(f => f.Precio)
+            .HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<Factura>()
+            .Property(f => f.Subtotal)
+            .HasColumnType("decimal(18,2)");
+
+        // Configuración de Productos
         modelBuilder.Entity<Productos>()
             .HasIndex(p => p.Nombre)
             .IsUnique();
 
-
-        modelBuilder.Entity<CarritoMascotas>()
-            .HasOne(cm => cm.Mascota)
-            .WithMany()
-            .HasForeignKey(cm => cm.MascotaId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<Citas>()
-            .HasOne(c => c.Empleado)
-            .WithMany(e => e.Cita)
-            .HasForeignKey(c => c.EmpleadoId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-  
         modelBuilder.Entity<Productos>()
             .HasOne(p => p.Proveedores)
             .WithMany()
             .HasForeignKey(p => p.ProveedorId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Configuración de CarritoMascotas
+        modelBuilder.Entity<CarritoMascotas>()
+            .HasOne(cm => cm.Mascota)
+            .WithMany()
+            .HasForeignKey(cm => cm.MascotaId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configuración de Citas
+        modelBuilder.Entity<Citas>()
+            .HasOne(c => c.Empleado)
+            .WithMany(e => e.Cita)
+            .HasForeignKey(c => c.EmpleadoId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Proveedores>().HasData(new List<Proveedores>()
     {
@@ -136,7 +164,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            .UseSqlServer("workstation id=RegistroDb.mssql.somee.com;packet size=4096;user id=ahb45_SQLLogin_1;pwd=Maximo134190;data source=RegistroDb.mssql.somee.com;persist security info=False;initial catalog=RegistroDb;TrustServerCertificate=True") // Reemplaza con tu cadena de conexión
+            .UseSqlServer("Server=ADRIAN\\MSSQLSERVER01;Database=TiendaMascotas2;Trusted_Connection=True;TrustServerCertificate=True;") // Reemplaza con tu cadena de conexión
             .EnableSensitiveDataLogging(); // Habilitar el registro sensible de datos
     }
 
