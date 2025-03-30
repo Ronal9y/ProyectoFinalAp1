@@ -35,6 +35,8 @@ namespace ProyectoFinalAp1
             builder.Services.AddScoped<ProveedoresService>();
             builder.Services.AddScoped<ProductoCategoriasService>();
             builder.Services.AddScoped<DonadorService>();
+            builder.Services.AddScoped<FacturaMascotaService>();
+            builder.Services.AddScoped<FacturaService>();
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();

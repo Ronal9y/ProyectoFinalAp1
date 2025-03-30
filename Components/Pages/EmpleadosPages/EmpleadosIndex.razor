@@ -73,7 +73,7 @@
                         <td>@empleado.Email</td>
                         <td>@empleado.Cargo</td>
                         <td>@empleado.FechaDeContratacion.ToString("dd-MM-yyyy")</td>
-                        <td>@empleado.Salario</td>
+                        <td>@string.Format("{0:N2}",empleado.Salario)</td>
 
                         <td>
                             <a href="/Empleados/Edit/@empleado.EmpleadoId" class="btn btn-outline-success">
