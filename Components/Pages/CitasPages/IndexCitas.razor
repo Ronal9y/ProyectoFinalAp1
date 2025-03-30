@@ -32,9 +32,9 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
             <div class="input-group">
-                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
+                <InputText class="form-control" @bind-Value="valorFiltro" placeholder="Buscar" />
                 <button class="btn btn-primary" type="button" @onclick="Buscar">
                     <i class="bi bi-search"></i> Buscar
                 </button>
@@ -57,7 +57,7 @@
                 <th>Nombre Mascota</th>
                 <th>Empleado</th>
                 <th>Editar</th>
-                <th>Eliminar</th>
+                <th>Cancelar</th>
             </tr>
         </thead>
         <tbody>
@@ -71,7 +71,7 @@
                         <td>@cita.Fecha.ToString("dd-MM-yyyy")</td>
                         <td>@cita.Descripcion</td>
                         <td>@cita.NombreMascota</td>
-                        <td>@cita.Empleado?.Nombre</td>
+                        <td>@cita.Empleado?.Nombre - @cita.Empleado?.Cargo</td>
                         <td>
                             <a href="/Citas/Edit/@cita.CitaId" class="btn btn-outline-success">
                                 <i class="bi bi-pencil-square fs-4"></i>
