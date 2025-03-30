@@ -20,7 +20,7 @@ namespace ProyectoFinalAp1.Models
 
         [Required]
         public int ProductoId { get; set; }
-        
+
         [Required]
         public int CarritoId { get; set; }
         [ForeignKey("ProductoId")]
