@@ -1,0 +1,98 @@
+﻿@page "/Mascotas/ComprarMascotas"
+@using ProyectoFinalAp1.Models
+@using ProyectoFinalAp1.Services
+@inject MascotasService mascotaService
+@inject CarritoMascotasService carritomascotaService
+@inject NavigationManager navigationManager
+
+
+
+<PageTitle>Comprar Mascotas</PageTitle>
+
+<div class="card shadow-lg">
+    <div class="card-header bg-dark text-white py-2 rounded">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="font-weight-bold text-center w-100">Mascotas Disponibles</h3>
+        </div>
+    </div>
+
+    <div class="row p-3">
+        @foreach (var mascota in ListarMascotas)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="@mascota.ImageURL" class="card-img-top" alt="Imagen de @mascota.Tipo" />
+                    <div class="card-body">
+                        <h5 class="card-title">@mascota.Tipo</h5>
+                        <p class="card-text">Raza: @mascota.Raza</p>
+                        <p class="card-text">Precio: @mascota.Precio.ToString("C")</p>
+                        <p class="card-text">Disponibles: @mascota.Cantidad</p>
+
+                        <div>
+                            <label for="nombreMascota-@mascota.MascotaId">Nombre de la Mascota:</label>
+                            <input type="text" id="nombreMascota-@mascota.MascotaId" class="form-control"
+                                   @bind="nombresMascotas[mascota.MascotaId]"
+                                   placeholder="Escriba el nombre de la mascota" />
+                        </div>
+                        <button class="btn btn-primary btn-block mt-2" @onclick="() => AgregarAlCarrito(mascota)">
+                            <i class="fa-solid fa-cart-plus"></i> Agregar al Carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<ProyectoFinalAp1.Models.Mascotas> ListarMascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
+    private Dictionary<int, string> nombresMascotas = new Dictionary<int, string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultado = await mascotaService.ListarMascotas(p => true);
+        ListarMascotas = resultado is List<ProyectoFinalAp1.Models.Mascotas> lista ?
+                        lista :
+                        resultado.ToList();
+
+        foreach (var mascota in ListarMascotas)
+        {
+            nombresMascotas[mascota.MascotaId] = string.Empty;
+        }
+    }
+
+    private async Task AgregarAlCarrito(ProyectoFinalAp1.Models.Mascotas mascota)
+    {
+        if (string.IsNullOrWhiteSpace(nombresMascotas[mascota.MascotaId]))
+        {
+            Console.WriteLine("Debe ingresar el nombre de la mascota.");
+            return;
+        }
+
+        try
+        {
+            // Llamada correcta al servicio con 2 parámetros (sin cantidad)
+            bool success = await carritomascotaService.AgregarAlCarritoMascotasAsync(
+                mascota.MascotaId,
+                nombresMascotas[mascota.MascotaId]);
+
+            if (success)
+            {
+                Console.WriteLine($"{nombresMascotas[mascota.MascotaId]} agregado al carrito exitosamente");
+                nombresMascotas[mascota.MascotaId] = string.Empty;
+
+                // Actualización visual del stock
+                mascota.Cantidad--;
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine("Error: La mascota ya está en el carrito o no hay stock disponible");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+        }
+    }
+}
