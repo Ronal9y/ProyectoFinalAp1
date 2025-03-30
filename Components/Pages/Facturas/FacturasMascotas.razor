@@ -1,0 +1,135 @@
+﻿@page "/Facturas/FacturasMascotas"
+@using ProyectoFinalAp1.Services
+@using ProyectoFinalAp1.Models
+@inject FacturaMascotaService FacturaMascotaService
+
+<h3 class="text-center mb-4">Facturas de Mascotas</h3>
+
+@if (facturas == null)
+{
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p>Cargando facturas...</p>
+    </div>
+}
+else if (!facturas.Any())
+{
+    <div class="alert alert-info text-center">
+        <i class="bi bi-receipt-cutoff fs-4"></i>
+        <p class="mt-2">No hay facturas de mascotas registradas</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID Factura</th>
+                    <th>Fecha</th>
+                    <th>Mascota</th>
+                    <th>Raza</th>
+                    <th>Donador</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var factura in facturas)
+                {
+                    <tr>
+                        <td>@factura.FacturaMascotaId</td>
+                        <td>@factura.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td>@GetNombreMascota(factura.CarritoMascotaId)</td>
+                        <td>@factura.Mascotas?.Raza</td>
+                        <td>@factura.Mascotas?.Donador?.Nombre</td>
+                        <td>@factura.Total.ToString("C")</td>
+                        <td>
+                            <a href="@($"/FacturasMascotas/Detalle/{factura.FacturaMascotaId}")"
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="(() => CambiarPagina(currentPage - 1))">
+                    Anterior
+                </button>
+            </li>
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <button class="page-link" @onclick="(() => CambiarPagina(i))">
+                        @i
+                    </button>
+                </li>
+            }
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <button class="page-link" @onclick="(() => CambiarPagina(currentPage + 1))">
+                    Siguiente
+                </button>
+            </li>
+        </ul>
+    </nav>
+}
+
+@code {
+    private List<FacturaMascota> facturas = new List<FacturaMascota>();
+    private Dictionary<int, string> nombresMascotas = new Dictionary<int, string>();
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages = 1;
+    private int totalItems = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarFacturas();
+    }
+
+    private async Task CargarFacturas()
+    {
+        try
+        {
+            var todasFacturas = await FacturaMascotaService.ObtenerTodasFacturasMascotas();
+            totalItems = todasFacturas.Count;
+            totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            facturas = todasFacturas
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Cargar nombres de mascotas
+            nombresMascotas = facturas.ToDictionary(
+                f => f.CarritoMascotaId,
+                f => f.CarritoMascotas?.NombreMascota ?? "N/A");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar facturas: {ex.Message}");
+        }
+    }
+
+    private string GetNombreMascota(int carritoMascotaId)
+    {
+        return nombresMascotas.TryGetValue(carritoMascotaId, out var nombre) ? nombre : "N/A";
+    }
+
+    private async Task CambiarPagina(int pagina)
+    {
+        if (pagina < 1 || pagina > totalPages)
+            return;
+
+        currentPage = pagina;
+        await CargarFacturas();
+    }
+}
