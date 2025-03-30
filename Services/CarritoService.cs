@@ -15,64 +15,99 @@ namespace ProyectoFinalAp1.Services
             _dbFactory = dbFactory;
         }
 
-        // Obtener todos los items del carrito
         public async Task<List<Carrito>> ObtenerCarritoAsync()
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.Carrito
-                .Include(c => c.Producto) // Incluir datos del producto
+                .Include(c => c.Producto)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
-        // Agregar un producto al carrito
-        public async Task<bool> AgregarAlCarritoAsync(int productoId, int cantidad)
+        public async Task<bool> EliminarDelCarrito(int carritoId)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
-            var producto = await contexto.Productos.FindAsync(productoId);
-            if (producto == null)
-            {
-                return false; // Producto no encontrado
-            }
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
 
-            var carritoItem = await contexto.Carrito.FirstOrDefaultAsync(c => c.ProductoId == productoId);
-            if (carritoItem == null)
+            try
             {
-                carritoItem = new Carrito
+                var carritoItem = await contexto.Carrito.FindAsync(carritoId);
+                if (carritoItem == null) return false;
+
+                contexto.Carrito.Remove(carritoItem);
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> ComprarProducto(int carritoId)
+        {
+            await using var contexto = await _dbFactory.CreateDbContextAsync();
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
+
+            try
+            {
+                var carritoItem = await contexto.Carrito
+                    .Include(c => c.Producto)
+                    .FirstOrDefaultAsync(c => c.CarritoId == carritoId);
+
+                if (carritoItem == null) return false;
+                if (carritoItem.Producto.Stock < carritoItem.Cantidad) return false;
+
+                carritoItem.Producto.Stock -= carritoItem.Cantidad;
+                contexto.Productos.Update(carritoItem.Producto);
+                contexto.Carrito.Remove(carritoItem);
+
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> ComprarCarrito()
+        {
+            await using var contexto = await _dbFactory.CreateDbContextAsync();
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
+
+            try
+            {
+                var carritoItems = await contexto.Carrito
+                    .Include(c => c.Producto)
+                    .ToListAsync();
+
+                foreach (var item in carritoItems)
                 {
-                    ProductoId = productoId,
-                    Cantidad = cantidad
-                };
-                contexto.Carrito.Add(carritoItem);
+                    if (item.Producto.Stock < item.Cantidad)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+
+                    item.Producto.Stock -= item.Cantidad;
+                    contexto.Productos.Update(item.Producto);
+                    contexto.Carrito.Remove(item);
+                }
+
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
             }
-            else
+            catch
             {
-                carritoItem.Cantidad += cantidad;
+                await transaction.RollbackAsync();
+                throw;
             }
-
-            await contexto.SaveChangesAsync();
-            return true;
-        }
-
-        // Eliminar un producto del carrito
-        public async Task<bool> EliminarDelCarritoAsync(int carritoId)
-        {
-            await using var contexto = await _dbFactory.CreateDbContextAsync();
-            var carritoItem = await contexto.Carrito.FindAsync(carritoId);
-            if (carritoItem == null)
-            {
-                return false; // Item no encontrado
-            }
-
-            contexto.Carrito.Remove(carritoItem);
-            await contexto.SaveChangesAsync();
-            return true;
-        }
-
-        // Obtener el total de productos en el carrito
-        public async Task<int> ObtenerTotalProductosEnCarritoAsync()
-        {
-            await using var contexto = await _dbFactory.CreateDbContextAsync();
-            return await contexto.Carrito.SumAsync(c => c.Cantidad);
         }
     }
 }
