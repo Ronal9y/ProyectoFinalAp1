@@ -1,0 +1,130 @@
+﻿@page "/Facturas/FacturasMascotas"
+@using ProyectoFinalAp1.Models
+@using ProyectoFinalAp1.Services
+@inject FacturaMascotaService FacturaMascotaService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Detalle de Factura de Mascotas</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Detalle de Factura</h3>
+                <button class="btn btn-light btn-sm" @onclick="VolverAlCarrito">
+                    <i class="bi bi-arrow-left"></i> Volver al Carrito
+                </button>
+            </div>
+            <div class="mt-2">
+                <span class="me-3"><strong>Fecha:</strong> @(facturas?.FirstOrDefault()?.Fecha.ToString("dd/MM/yyyy HH:mm") ?? "")</span>
+                <span><strong>N° Factura:</strong> @(facturas?.FirstOrDefault()?.CarritoMascotaId.ToString() ?? "")</span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @if (facturas == null)
+            {
+                <div class="text-center">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            }
+            else if (!facturas.Any())
+            {
+                <div class="alert alert-info">
+                    No hay detalles de factura disponibles
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Mascota</th>
+                                <th>Raza</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var factura in facturas)
+                            {
+                                <tr>
+                                    <td>@factura.Mascotas?.Tipo</td>
+                                    <td>@factura.Mascotas?.Raza</td>
+                                    <td>@factura.Cantidad</td>
+                                    <td>@factura.Precio.ToString("C")</td>
+                                    <td>@factura.Subtotal.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th colspan="4" class="text-end">Total:</th>
+                                <th>@facturas.Sum(f => f.Subtotal).ToString("C")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="text-end mt-3">
+                    <button class="btn btn-success" @onclick="ImprimirFactura">
+                        <i class="bi bi-printer"></i> Imprimir Factura
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<FacturaMascota> facturas = new List<FacturaMascota>();
+    private int? carritoMascotaId;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "carritoMascotaId")]
+    public string CarritoMascotaIdParam { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (int.TryParse(CarritoMascotaIdParam, out int id))
+        {
+            carritoMascotaId = id;
+            await CargarFacturas();
+        }
+        else
+        {
+            facturas = await FacturaMascotaService.ObtenerTodasFacturasMascotas();
+        }
+    }
+
+    private async Task CargarFacturas()
+    {
+        if (carritoMascotaId.HasValue)
+        {
+            facturas = await FacturaMascotaService.ObtenerFacturasPorCarritoMascota(carritoMascotaId.Value);
+        }
+        else
+        {
+            facturas = await FacturaMascotaService.ObtenerTodasFacturasMascotas();
+        }
+    }
+
+    private async Task VolverAlCarrito()
+    {
+        if (carritoMascotaId.HasValue)
+        {
+            await FacturaMascotaService.EliminarFacturasTemporales(carritoMascotaId.Value);
+        }
+        NavigationManager.NavigateTo("/CarritoMascotas");
+    }
+
+    private async Task ImprimirFactura()
+    {
+        await JSRuntime.InvokeVoidAsync("window.print");
+    }
+}
