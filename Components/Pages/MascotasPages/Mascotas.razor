@@ -1,11 +1,11 @@
-﻿@page "/Mascotas/ComprarMascotas"
+﻿@* @page "/Mascotas/ComprarMascotas"
 @using ProyectoFinalAp1.Models
 @using ProyectoFinalAp1.Services
 @inject MascotasService mascotaService
 @inject CarritoMascotasService carritomascotaService
 @inject NavigationManager navigationManager
-
-
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 
 <PageTitle>Comprar Mascotas</PageTitle>
 
@@ -95,4 +95,4 @@
             Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
         }
     }
-}
+} *@
