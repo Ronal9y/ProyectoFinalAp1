@@ -77,16 +77,16 @@
                         @if (!string.IsNullOrEmpty(producto.ImagenURL))
                         {
                             <div class="text-center mb-3" style="height: 200px; overflow: hidden;">
-                                <img src="@producto.ImagenURL" 
-                                     class="img-fluid rounded" 
-                                     style="width: 100%; height: 100%; object-fit: cover;" 
+                                <img src="@producto.ImagenURL"
+                                     class="img-fluid rounded"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
                                      alt="@producto.Nombre" />
                             </div>
                         }
                         <div class="card-body">
                             <h5 class="card-title">@producto.Nombre</h5>
                             <p class="card-text text-muted"><strong>ID:</strong> @producto.ProductoId</p>
-                            
+
                             <div class="mb-2">
                                 <p class="mb-1"><strong>Categoría:</strong><span class="badge bg-primary"> @producto.TipoCategoria</span></p>
                                 <p class="mb-1"><strong>Descripción:</strong></p>
