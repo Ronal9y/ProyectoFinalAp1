@@ -2,90 +2,58 @@
 @using ProyectoFinalAp1.Services
 @using ProyectoFinalAp1.Models
 @inject CarritoService CarritoService
+@inject FacturaService FacturaService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
-<h2 class="text-center mb-4">Carrito de Compras</h2>
+<h2>Carrito de Compras</h2>
 
 @if (carritoItems == null)
 {
-    <div class="text-center">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-        </div>
-        <p class="mt-2">Cargando carrito...</p>
-    </div>
+    <p>Cargando...</p>
 }
 else if (!carritoItems.Any())
 {
-    <div class="alert alert-info text-center">
-        <i class="bi bi-cart-x fs-4"></i>
-        <p class="mt-2">No hay productos en el carrito</p>
-        <a href="/Producto/Index" class="btn btn-primary mt-2">
-            <i class="bi bi-arrow-left"></i> Seguir Comprando
-        </a>
-    </div>
+    <div class="alert alert-info">No hay productos en el carrito</div>
+    <a href="/Producto/Index" class="btn btn-primary">Ir a Productos</a>
 }
 else
 {
-    @if (!string.IsNullOrEmpty(mensajeError))
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            @mensajeError
-            <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
-        </div>
-    }
-    @if (!string.IsNullOrEmpty(mensajeExito))
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            @mensajeExito
-            <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
-        </div>
-    }
-
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-            <thead class="table-dark">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carritoItems)
+            {
                 <tr>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unitario</th>
-                    <th>Total</th>
-                    <th>Acciones</th>
+                    <td>@item.Producto.Nombre</td>
+                    <td>@item.Cantidad</td>
+                    <td>@item.Producto.Precio.ToString("C")</td>
+                    <td>@((item.Cantidad * item.Producto.Precio).ToString("C"))</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="async () => await EliminarDelCarrito(item.CarritoId)">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                        <button class="btn btn-success btn-sm" @onclick="async () => await ComprarProducto(item.CarritoId)">
+                            <i class="bi bi-cart-check"></i> Comprar
+                        </button>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in carritoItems)
-                {
-                    <tr>
-                        <td>@item.Producto.Nombre</td>
-                        <td>@item.Cantidad</td>
-                        <td>@item.Producto.Precio.ToString("C")</td>
-                        <td>@((item.Cantidad * item.Producto.Precio).ToString("C"))</td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-danger btn-sm me-2" @onclick="async () => await EliminarDelCarritoAsync(item.CarritoId)">
-                                    <i class="bi bi-trash"></i> Eliminar
-                                </button>
-                                <button class="btn btn-success btn-sm" @onclick="async () => await ComprarProducto(item.CarritoId)">
-                                    <i class="bi bi-cart-check"></i> Comprar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+            }
+        </tbody>
+    </table>
 
     <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap">
         <div class="d-flex flex-column mb-3">
-            <h4 class="mb-3">
-                <i class="bi bi-cash-coin"></i> Total: @carritoItems.Sum(item => item.Cantidad * item.Producto.Precio).ToString("C")
-            </h4>
-            <a href="/Producto/Index" class="btn btn-outline-primary align-self-start">
+            <h4 class="mb-3">Total: @carritoItems.Sum(item => item.Cantidad * item.Producto.Precio).ToString("C")</h4>
+            <a href="/Producto/Index" class="btn btn-primary align-self-start">
                 <i class="bi bi-arrow-left"></i> Seguir Comprando
             </a>
         </div>
@@ -98,8 +66,6 @@ else
 
 @code {
     private List<ProyectoFinalAp1.Models.Carrito> carritoItems = new List<ProyectoFinalAp1.Models.Carrito>();
-    private string mensajeError = string.Empty;
-    private string mensajeExito = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,20 +74,11 @@ else
 
     private async Task CargarCarrito()
     {
-        try
-        {
-            carritoItems = await CarritoService.ObtenerCarritoAsync();
-            mensajeError = string.Empty;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            mensajeError = $"Error al cargar el carrito: {ex.Message}";
-            Console.WriteLine(mensajeError);
-        }
+        carritoItems = await CarritoService.ObtenerCarritoAsync();
+        StateHasChanged();
     }
 
-    private async Task EliminarDelCarritoAsync(int carritoId)
+    private async Task EliminarDelCarrito(int carritoId)
     {
         try
         {
@@ -130,29 +87,22 @@ else
 
             if (!confirmado) return;
 
-            var resultado = await CarritoService.EliminarDelCarritoAsync(carritoId);
+            var resultado = await CarritoService.EliminarDelCarrito(carritoId);
 
             if (resultado)
             {
                 carritoItems.RemoveAll(x => x.CarritoId == carritoId);
-                mensajeExito = "Producto eliminado del carrito";
-                mensajeError = string.Empty;
                 StateHasChanged();
-
-                await Task.Delay(3000);
-                mensajeExito = string.Empty;
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert", "Producto eliminado del carrito");
             }
             else
             {
-                mensajeError = "No se pudo eliminar el producto del carrito";
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert", "No se pudo eliminar el producto");
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al eliminar: {ex.Message}";
-            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al eliminar: {ex.Message}");
         }
     }
 
@@ -165,28 +115,29 @@ else
 
             if (!confirmado) return;
 
-            var resultado = await CarritoService.ComprarProducto(carritoId);
+            var resultado = await CarritoService.ComprarProductoYGenerarFactura(carritoId);
 
             if (resultado)
             {
                 carritoItems.RemoveAll(x => x.CarritoId == carritoId);
-                mensajeExito = "Producto comprado y factura generada correctamente";
-                mensajeError = string.Empty;
                 StateHasChanged();
 
-                await Task.Delay(3000);
-                NavigationManager.NavigateTo("/Facturas/FacturaProductos");
+                var facturas = await FacturaService.ObtenerFacturasPorCarrito(carritoId);
+                if (facturas.Any())
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Producto comprado con éxito");
+                    NavigationManager.NavigateTo($"/Facturas/FacturasProducto?carritoId={carritoId}");
+                }
             }
             else
             {
-                mensajeError = "No se pudo completar la compra del producto";
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert",
+                    "No se pudo comprar el producto. Verifique el stock disponible.");
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al comprar el producto: {ex.Message}";
-            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al comprar: {ex.Message}");
         }
     }
 
@@ -199,28 +150,34 @@ else
 
             if (!confirmado) return;
 
-            var resultado = await CarritoService.ComprarCarrito();
+            var resultado = await CarritoService.ComprarTodoYGenerarFactura();
 
             if (resultado)
             {
                 carritoItems.Clear();
-                mensajeExito = "Compra realizada y factura generada correctamente";
-                mensajeError = string.Empty;
                 StateHasChanged();
 
-                await Task.Delay(3000);
-                NavigationManager.NavigateTo("/Facturas/FacturasProducto");
+                var primerItemId = carritoItems.FirstOrDefault()?.CarritoId ?? 0;
+                if (primerItemId > 0)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
+                    NavigationManager.NavigateTo($"/Facturas/FacturasProducto?carritoId={primerItemId}");
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada pero no se pudo mostrar la factura");
+                }
             }
             else
             {
-                mensajeError = "No se pudo completar la compra del carrito";
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert",
+                    "No se pudieron comprar todos los productos. Verifique los stocks disponibles.");
+                await CargarCarrito();
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al comprar: {ex.Message}";
-            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al comprar: {ex.Message}");
         }
     }
 }
