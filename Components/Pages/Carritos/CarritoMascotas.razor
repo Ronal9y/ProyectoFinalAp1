@@ -2,10 +2,12 @@
 @using ProyectoFinalAp1.Services
 @using ProyectoFinalAp1.Models
 @inject CarritoMascotasService carritoMascotasService
+@inject FacturaMascotaService facturaMascotaService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
-<h2>Carrito de Compras</h2>
+<h2>Carrito de Mascotas</h2>
 
 @if (carritoItems == null)
 {
@@ -13,7 +15,7 @@
 }
 else if (!carritoItems.Any())
 {
-    <div class="alert alert-info">No hay Mascotas en el carrito</div>
+    <div class="alert alert-info">No hay mascotas en el carrito</div>
     <a href="/Mascota/Index" class="btn btn-primary">Ir a Mascotas</a>
 }
 else
@@ -21,6 +23,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Mascota</th>
                 <th>Raza</th>
                 <th>Cantidad</th>
                 <th>Precio Unitario</th>
@@ -32,6 +35,7 @@ else
             @foreach (var item in carritoItems)
             {
                 <tr>
+                    <td>@item.NombreMascota</td>
                     <td>@item.Mascota.Raza</td>
                     <td>@item.Cantidad</td>
                     <td>@item.Mascota.Precio.ToString("C")</td>
@@ -52,7 +56,7 @@ else
     <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap">
         <div class="d-flex flex-column mb-3">
             <h4 class="mb-3">Total: @carritoItems.Sum(item => item.Cantidad * item.Mascota.Precio).ToString("C")</h4>
-            <a href="/Producto/Index" class="btn btn-primary align-self-start">
+            <a href="/Mascota/Index" class="btn btn-primary align-self-start">
                 <i class="bi bi-arrow-left"></i> Seguir Comprando
             </a>
         </div>
@@ -76,20 +80,20 @@ else
         StateHasChanged();
     }
 
-    private async Task EliminarDelCarrito(int carritoId)
+    private async Task EliminarDelCarrito(int carritoMascotaId)
     {
         try
         {
             bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
-                "¿Está seguro que desea eliminar este producto del carrito?");
+                "¿Está seguro que desea eliminar esta mascota del carrito?");
 
             if (!confirmado) return;
 
-            var resultado = await carritoMascotasService.EliminarDelCarrito(carritoId);
+            var resultado = await carritoMascotasService.EliminarDelCarrito(carritoMascotaId);
 
             if (resultado)
             {
-                carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoId);
+                carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoMascotaId);
                 StateHasChanged();
                 await JSRuntime.InvokeVoidAsync("alert", "Mascota eliminada del carrito");
             }
@@ -109,22 +113,28 @@ else
         try
         {
             bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
-                "¿Está seguro que desea comprar este producto?");
+                "¿Está seguro que desea comprar esta mascota?");
 
             if (!confirmado) return;
 
-            var resultado = await carritoMascotasService.ComprarMascota(carritoMascotaId);
+            var resultado = await carritoMascotasService.ComprarMascotaYGenerarFactura(carritoMascotaId);
 
             if (resultado)
             {
                 carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoMascotaId);
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Producto comprado con éxito");
+
+                var facturas = await facturaMascotaService.ObtenerFacturasPorCarritoMascota(carritoMascotaId);
+                if (facturas.Any())
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Mascota comprada con éxito");
+                    NavigationManager.NavigateTo($"/Facturas/FacturasMascotas?carritoMascotaId={carritoMascotaId}");
+                }
             }
             else
             {
                 await JSRuntime.InvokeVoidAsync("alert",
-                    "No se pudo comprar el producto. Verifique el stock disponible.");
+                    "No se pudo comprar la mascota. Verifique la disponibilidad.");
             }
         }
         catch (Exception ex)
@@ -138,22 +148,32 @@ else
         try
         {
             bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
-                "¿Está seguro que desea comprar todos los productos del carrito?");
+                "¿Está seguro que desea comprar todas las mascotas del carrito?");
 
             if (!confirmado) return;
 
-            var resultado = await carritoMascotasService.ComprarCarrito();
+            var resultado = await carritoMascotasService.ComprarTodoYGenerarFactura();
 
             if (resultado)
             {
                 carritoItems.Clear();
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
+
+                var primerItemId = carritoItems.FirstOrDefault()?.CarritoMascotaId ?? 0;
+                if (primerItemId > 0)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
+                    NavigationManager.NavigateTo($"/Facturas/FacturasMascotas?carritoMascotaId={primerItemId}");
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada pero no se pudo mostrar la factura");
+                }
             }
             else
             {
                 await JSRuntime.InvokeVoidAsync("alert",
-                    "No se pudieron comprar todos los productos. Verifique los stocks disponibles.");
+                    "No se pudieron comprar todas las mascotas. Verifique la disponibilidad.");
                 await CargarCarrito();
             }
         }
