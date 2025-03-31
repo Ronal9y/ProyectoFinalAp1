@@ -1,14 +1,26 @@
 ﻿@page "/Facturas/FacturasProducto"
 @using ProyectoFinalAp1.Models
 @using ProyectoFinalAp1.Services
-@inject FacturaService facturaService
+@inject FacturaService FacturaService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 
-<PageTitle>Listado de Facturas</PageTitle>
+<PageTitle>Detalle de Factura</PageTitle>
 
 <div class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-primary text-white">
-            <h3 class="text-center">Historial de Facturas</h3>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Detalle de Factura</h3>
+                <button class="btn btn-light btn-sm" @onclick="VolverAlCarrito">
+                    <i class="bi bi-arrow-left"></i> Volver al Carrito
+                </button>
+            </div>
+            <div class="mt-2">
+                <span class="me-3"><strong>Fecha:</strong> @(facturas?.FirstOrDefault()?.Fecha.ToString("dd/MM/yyyy HH:mm") ?? "")</span>
+                <span><strong>N° Factura:</strong> @(facturas?.FirstOrDefault()?.CarritoId.ToString() ?? "")</span>
+            </div>
         </div>
 
         <div class="card-body">
@@ -23,7 +35,7 @@
             else if (!facturas.Any())
             {
                 <div class="alert alert-info">
-                    No hay facturas registradas
+                    No hay detalles de factura disponibles
                 </div>
             }
             else
@@ -32,32 +44,36 @@
                     <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th>ID</th>
-                                <th>Fecha</th>
                                 <th>Producto</th>
                                 <th>Cantidad</th>
                                 <th>Precio Unitario</th>
                                 <th>Subtotal</th>
-                                <th>Total Factura</th>
-                                <th>Carrito ID</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var factura in facturas)
                             {
                                 <tr>
-                                    <td>@factura.FacturaId</td>
-                                    <td>@factura.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td>@factura.Producto?.Nombre</td>
                                     <td>@factura.Cantidad</td>
                                     <td>@factura.Precio.ToString("C")</td>
                                     <td>@factura.Subtotal.ToString("C")</td>
-                                    <td>@factura.Total.ToString("C")</td>
-                                    <td>@factura.CarritoId</td>
                                 </tr>
                             }
                         </tbody>
+                        <tfoot class="table-secondary">
+                            <tr>
+                                <th colspan="3" class="text-end">Total:</th>
+                                <th>@facturas.Sum(f => f.Subtotal).ToString("C")</th>
+                            </tr>
+                        </tfoot>
                     </table>
+                </div>
+
+                <div class="text-end mt-3">
+                    <button class="btn btn-primary" @onclick="ImprimirFactura">
+                        <i class="bi bi-printer"></i> Imprimir Factura
+                    </button>
                 </div>
             }
         </div>
@@ -66,17 +82,49 @@
 
 @code {
     private List<Factura> facturas = new List<Factura>();
+    private int? carritoId;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "carritoId")]
+    public string CarritoIdParam { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        if (int.TryParse(CarritoIdParam, out int id))
         {
-            facturas = await facturaService.ObtenerTodasFacturas();
+            carritoId = id;
+            await CargarFacturas();
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Error al cargar facturas: {ex.Message}");
-            // Aquí podrías mostrar un mensaje de error al usuario
+            facturas = await FacturaService.ObtenerTodasFacturas();
         }
+    }
+
+    private async Task CargarFacturas()
+    {
+        if (carritoId.HasValue)
+        {
+            facturas = await FacturaService.ObtenerFacturasPorCarrito(carritoId.Value);
+        }
+        else
+        {
+            facturas = await FacturaService.ObtenerTodasFacturas();
+        }
+    }
+
+    private async Task VolverAlCarrito()
+    {
+        if (carritoId.HasValue)
+        {
+            await FacturaService.EliminarFacturasTemporales(carritoId.Value);
+        }
+        NavigationManager.NavigateTo("/Carrito");
+    }
+
+    //funcion que no se se usara se cambiara por otra funcion mas adelante no
+    private async Task ImprimirFactura()
+    {
+        await JSRuntime.InvokeVoidAsync("window.print");
     }
 }

@@ -5,104 +5,70 @@
 @inject FacturaMascotaService facturaMascotaService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
-<h2 class="text-center mb-4">Carrito de Mascotas</h2>
+<h2>Carrito de Mascotas</h2>
 
 @if (carritoItems == null)
 {
-    <div class="text-center">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-        </div>
-        <p class="mt-2">Cargando carrito...</p>
-    </div>
+    <p>Cargando...</p>
 }
 else if (!carritoItems.Any())
 {
-    <div class="alert alert-info text-center">
-        <i class="bi bi-cart-x fs-4"></i>
-        <p class="mt-2">No hay mascotas en el carrito</p>
-        <a href="/Mascota/Index" class="btn btn-primary mt-2">
-            <i class="bi bi-paw"></i> Ver Mascotas Disponibles
-        </a>
-    </div>
+    <div class="alert alert-info">No hay mascotas en el carrito</div>
+    <a href="/Mascota/Index" class="btn btn-primary">Ir a Mascotas</a>
 }
 else
 {
-    @if (!string.IsNullOrEmpty(mensajeError))
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            @mensajeError
-            <button type="button" class="btn-close" @onclick="() => mensajeError = string.Empty"></button>
-        </div>
-    }
-    @if (!string.IsNullOrEmpty(mensajeExito))
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            @mensajeExito
-            <button type="button" class="btn-close" @onclick="() => mensajeExito = string.Empty"></button>
-        </div>
-    }
-
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered">
-            <thead class="table-dark">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Mascota</th>
+                <th>Raza</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in carritoItems)
+            {
                 <tr>
-                    <th>Mascota</th>
-                    <th>Raza</th>
-                    <th>Precio</th>
-                    <th>Acciones</th>
+                    <td>@item.NombreMascota</td>
+                    <td>@item.Mascota.Raza</td>
+                    <td>@item.Cantidad</td>
+                    <td>@item.Mascota.Precio.ToString("C")</td>
+                    <td>@((item.Cantidad * item.Mascota.Precio).ToString("C"))</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="async () => await EliminarDelCarrito(item.CarritoMascotaId)">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                        <button class="btn btn-success btn-sm" @onclick="async () => await ComprarMascota(item.CarritoMascotaId)">
+                            <i class="bi bi-cart-check"></i> Comprar
+                        </button>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in carritoItems)
-                {
-                    <tr>
-                        <td>@item.NombreMascota</td>
-                        <td>@item.Mascota?.Raza</td>
-                        <td>@item.Mascota?.Precio.ToString("C")</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm me-2" @onclick="async () => await EliminarDelCarrito(item.CarritoMascotaId)">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </button>
-                            <button class="btn btn-success btn-sm" @onclick="async () => await ComprarMascota(item.CarritoMascotaId)">
-                                <i class="bi bi-cart-check"></i> Comprar
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+            }
+        </tbody>
+    </table>
 
     <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap">
         <div class="d-flex flex-column mb-3">
-            <h4 class="mb-3">
-                <i class="bi bi-cash-coin"></i> Total: @carritoItems.Sum(item => item.Mascota?.Precio ?? 0).ToString("C")
-            </h4>
-            <a href="/Mascota/Index" class="btn btn-outline-primary align-self-start">
+            <h4 class="mb-3">Total: @carritoItems.Sum(item => item.Cantidad * item.Mascota.Precio).ToString("C")</h4>
+            <a href="/Mascota/Index" class="btn btn-primary align-self-start">
                 <i class="bi bi-arrow-left"></i> Seguir Comprando
             </a>
         </div>
 
-        <div class="d-flex flex-column">
-            <button class="btn btn-success mb-2" @onclick="ComprarTodo">
-                <i class="bi bi-cart-check"></i> Comprar Todo el Carrito
-            </button>
-            <button class="btn btn-outline-danger" @onclick="VaciarCarrito">
-                <i class="bi bi-trash"></i> Vaciar Carrito
-            </button>
-        </div>
+        <button class="btn btn-success" @onclick="ComprarTodo">
+            <i class="bi bi-cart-check"></i> Comprar Todo
+        </button>
     </div>
 }
 
 @code {
     private List<ProyectoFinalAp1.Models.CarritoMascotas> carritoItems = new List<ProyectoFinalAp1.Models.CarritoMascotas>();
-    private string mensajeError = string.Empty;
-    private string mensajeExito = string.Empty;
-
     protected override async Task OnInitializedAsync()
     {
         await CargarCarrito();
@@ -110,20 +76,11 @@ else
 
     private async Task CargarCarrito()
     {
-        try
-        {
-            carritoItems = await carritoMascotasService.ObtenerCarritoMascotasAsync();
-            mensajeError = string.Empty;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            mensajeError = $"Error al cargar el carrito: {ex.Message}";
-            Console.WriteLine(mensajeError);
-        }
+        carritoItems = await carritoMascotasService.ObtenerCarritoMascotasAsync();
+        StateHasChanged();
     }
 
-    private async Task EliminarDelCarrito(int carritoId)
+    private async Task EliminarDelCarrito(int carritoMascotaId)
     {
         try
         {
@@ -132,127 +89,97 @@ else
 
             if (!confirmado) return;
 
-            var resultado = await carritoMascotasService.EliminarDelCarritoAsync(carritoId);
+            var resultado = await carritoMascotasService.EliminarDelCarrito(carritoMascotaId);
 
             if (resultado)
             {
-                carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoId);
-                mensajeExito = "Mascota eliminada del carrito";
-                mensajeError = string.Empty;
+                carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoMascotaId);
                 StateHasChanged();
-
-                await Task.Delay(3000);
-                mensajeExito = string.Empty;
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert", "Mascota eliminada del carrito");
             }
             else
             {
-                mensajeError = "No se pudo eliminar la mascota del carrito";
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert", "No se pudo eliminar la mascota");
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al eliminar: {ex.Message}";
-            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al eliminar: {ex.Message}");
         }
     }
+
     private async Task ComprarMascota(int carritoMascotaId)
     {
         try
         {
             bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
-                "¿Está seguro que desea comprar esta mascota? Se generará una factura.");
+                "¿Está seguro que desea comprar esta mascota?");
 
             if (!confirmado) return;
 
-            // Forzar recarga del carrito para obtener datos actualizados
-            await CargarCarrito();
-
-            var resultado = await carritoMascotasService.ComprarMascota(carritoMascotaId);
+            var resultado = await carritoMascotasService.ComprarMascotaYGenerarFactura(carritoMascotaId);
 
             if (resultado)
             {
-                // Recargar completamente el carrito después de la compra
-                await CargarCarrito();
-
-                mensajeExito = "Mascota comprada y factura generada correctamente";
-                mensajeError = string.Empty;
+                carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoMascotaId);
                 StateHasChanged();
 
-                await Task.Delay(3000);
-                NavigationManager.NavigateTo("/Facturas/FacturasMascota");
+                var facturas = await facturaMascotaService.ObtenerFacturasPorCarritoMascota(carritoMascotaId);
+                if (facturas.Any())
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Mascota comprada con éxito");
+                    NavigationManager.NavigateTo($"/Facturas/FacturasMascotas?carritoMascotaId={carritoMascotaId}");
+                }
             }
             else
             {
-                mensajeError = "No se pudo completar la compra. Verifique la disponibilidad.";
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert",
+                    "No se pudo comprar la mascota. Verifique la disponibilidad.");
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al comprar la mascota: {ex.Message}";
-            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al comprar: {ex.Message}");
         }
     }
+
     private async Task ComprarTodo()
     {
         try
         {
             bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
-                "¿Está seguro que desea comprar todas las mascotas del carrito? Se generará una factura por cada una.");
+                "¿Está seguro que desea comprar todas las mascotas del carrito?");
 
             if (!confirmado) return;
 
-            var resultado = await carritoMascotasService.ComprarCarritoMascotas();
+            var resultado = await carritoMascotasService.ComprarTodoYGenerarFactura();
 
             if (resultado)
             {
                 carritoItems.Clear();
-                mensajeExito = "Compra realizada y facturas generadas correctamente";
-                mensajeError = string.Empty;
                 StateHasChanged();
 
-                await Task.Delay(3000);
-                NavigationManager.NavigateTo("/Facturas/FacturasMascota");
+                var primerItemId = carritoItems.FirstOrDefault()?.CarritoMascotaId ?? 0;
+                if (primerItemId > 0)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
+                    NavigationManager.NavigateTo($"/Facturas/FacturasMascotas?carritoMascotaId={primerItemId}");
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada pero no se pudo mostrar la factura");
+                }
             }
             else
             {
-                mensajeError = "No se pudo completar la compra. Verifique la disponibilidad de las mascotas.";
-                StateHasChanged();
+                await JSRuntime.InvokeVoidAsync("alert",
+                    "No se pudieron comprar todas las mascotas. Verifique la disponibilidad.");
                 await CargarCarrito();
             }
         }
         catch (Exception ex)
         {
-            mensajeError = $"Error al comprar: {ex.Message}";
-            StateHasChanged();
-        }
-    }
-
-    private async Task VaciarCarrito()
-    {
-        try
-        {
-            bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
-                "¿Está seguro que desea vaciar completamente el carrito?");
-
-            if (!confirmado) return;
-
-            await carritoMascotasService.VaciarCarritoMascotasAsync();
-            carritoItems.Clear();
-            mensajeExito = "Carrito vaciado correctamente";
-            mensajeError = string.Empty;
-            StateHasChanged();
-
-            await Task.Delay(3000);
-            mensajeExito = string.Empty;
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            mensajeError = $"Error al vaciar el carrito: {ex.Message}";
-            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al comprar: {ex.Message}");
         }
     }
 }

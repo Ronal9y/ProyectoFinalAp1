@@ -17,70 +17,94 @@ namespace ProyectoFinalAp1.Services
             _dbFactory = dbFactory;
         }
 
-        public async Task<int> CrearFacturaMascota(List<CarritoMascotas> itemsCarrito)
+        public async Task<int> CrearFacturaMascotaIndividual(int carritoMascotaId)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
 
             try
             {
-                if (itemsCarrito == null || !itemsCarrito.Any())
+                var carritoItem = await contexto.CarritoMascotas
+                    .Include(c => c.Mascota)
+                    .FirstOrDefaultAsync(c => c.CarritoMascotaId == carritoMascotaId);
+
+                if (carritoItem == null)
+                    throw new Exception("Mascota no encontrada en el carrito");
+
+                var factura = new FacturaMascota
                 {
-                    Console.WriteLine("Error: No hay items en el carrito de mascotas");
-                    return -1;
-                }
+                    Fecha = DateTime.Now,
+                    Total = (decimal)(carritoItem.Cantidad * carritoItem.Mascota.Precio),
+                    MascotaId = carritoItem.MascotaId,
+                    CarritoMascotaId = carritoItem.CarritoMascotaId,
+                    Cantidad = carritoItem.Cantidad,
+                    Precio = carritoItem.Mascota.Precio,
+                    Subtotal = carritoItem.Cantidad * carritoItem.Mascota.Precio,
+                    Mascotas = carritoItem.Mascota
+                };
 
-                var facturas = new List<FacturaMascota>();
+                contexto.FacturaMascotas.Add(factura);
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                foreach (var item in itemsCarrito)
-                {
-                    if (item.Mascota == null)
-                    {
-                        Console.WriteLine($"Error: Mascota no encontrada para item {item.CarritoMascotaId}");
-                        return -1;
-                    }
-
-                    var factura = new FacturaMascota
-                    {
-                        Fecha = DateTime.Now,
-                        Total = (decimal)item.Mascota.Precio, // Solo 1 unidad
-                        MascotaId = item.MascotaId,
-                        CarritoMascotaId = item.CarritoMascotaId,
-                        Cantidad = 1, // Siempre 1
-                        Precio = item.Mascota.Precio,
-                        Subtotal = item.Mascota.Precio,
-                        Mascotas = item.Mascota
-                    };
-
-                    contexto.FacturaMascotas.Add(factura);
-                    facturas.Add(factura);
-                }
-
-                var cambios = await contexto.SaveChangesAsync();
-                if (cambios < facturas.Count)
-                {
-                    Console.WriteLine($"Error: Solo se guardaron {cambios} de {facturas.Count} facturas");
-                    return -1;
-                }
-
-                return facturas.First().FacturaMascotaId;
+                return factura.FacturaMascotaId;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al crear factura mascota: {ex.Message}");
-                return -1;
+                await transaction.RollbackAsync();
+                throw new Exception($"Error al crear factura individual: {ex.Message}");
             }
         }
 
-        public async Task<FacturaMascota> ObtenerFacturaMascota(int id)
+        public async Task<int> CrearFacturaMascotaGlobal()
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
-            return await contexto.FacturaMascotas
-                .Include(f => f.Mascotas)
-                .ThenInclude(m => m.Donador)
-                .FirstOrDefaultAsync(f => f.FacturaMascotaId == id);
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
+
+            try
+            {
+                var carritoItems = await contexto.CarritoMascotas
+                    .Include(c => c.Mascota)
+                    .ToListAsync();
+
+                if (!carritoItems.Any())
+                    throw new Exception("No hay mascotas en el carrito");
+
+                // Creamos una factura por cada mascota pero las relacionamos con el mismo CarritoMascotaId
+                var facturas = new List<FacturaMascota>();
+                var primerItem = carritoItems.First();
+
+                foreach (var item in carritoItems)
+                {
+                    var factura = new FacturaMascota
+                    {
+                        Fecha = DateTime.Now,
+                        Total = (decimal)(item.Cantidad * item.Mascota.Precio),
+                        MascotaId = item.MascotaId,
+                        CarritoMascotaId = primerItem.CarritoMascotaId, // Mismo CarritoMascotaId para agrupar
+                        Cantidad = item.Cantidad,
+                        Precio = item.Mascota.Precio,
+                        Subtotal = item.Cantidad * item.Mascota.Precio,
+                        Mascotas = item.Mascota
+                    };
+
+                    facturas.Add(factura);
+                    contexto.FacturaMascotas.Add(factura);
+                }
+
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return primerItem.CarritoMascotaId; // Retornamos el CarritoMascotaId para agrupar
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Error al crear factura global: {ex.Message}");
+            }
         }
 
-        public async Task<List<FacturaMascota>> ObtenerFacturasMascotasPorCarrito(int carritoMascotaId)
+        public async Task<List<FacturaMascota>> ObtenerFacturasPorCarritoMascota(int carritoMascotaId)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.FacturaMascotas
@@ -99,6 +123,20 @@ namespace ProyectoFinalAp1.Services
                 .ThenInclude(m => m.Donador)
                 .OrderByDescending(f => f.Fecha)
                 .ToListAsync();
+        }
+
+        public async Task EliminarFacturasTemporales(int carritoMascotaId)
+        {
+            await using var contexto = await _dbFactory.CreateDbContextAsync();
+            var facturas = await contexto.FacturaMascotas
+                .Where(f => f.CarritoMascotaId == carritoMascotaId)
+                .ToListAsync();
+
+            if (facturas.Any())
+            {
+                contexto.FacturaMascotas.RemoveRange(facturas);
+                await contexto.SaveChangesAsync();
+            }
         }
     }
 }

@@ -17,59 +17,91 @@ namespace ProyectoFinalAp1.Services
             _dbFactory = dbFactory;
         }
 
-        public async Task<int> CrearFactura(List<Carrito> itemsCarrito)
+        public async Task<int> CrearFacturaIndividual(int carritoId)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
 
             try
             {
-                if (itemsCarrito == null || !itemsCarrito.Any())
-                    throw new Exception("No hay productos en el carrito para facturar");
+                var carritoItem = await contexto.Carrito
+                    .Include(c => c.Producto)
+                    .FirstOrDefaultAsync(c => c.CarritoId == carritoId);
 
-                var facturas = new List<Factura>();
+                if (carritoItem == null)
+                    throw new Exception("Producto no encontrado en el carrito");
 
-                foreach (var item in itemsCarrito)
+                var factura = new Factura
                 {
-                    var producto = await contexto.Productos.FindAsync(item.ProductoId);
-                    if (producto == null)
-                        throw new Exception($"Producto con ID {item.ProductoId} no encontrado");
+                    Fecha = DateTime.Now,
+                    Total = (decimal)(carritoItem.Cantidad * carritoItem.Producto.Precio),
+                    ProductoId = carritoItem.ProductoId,
+                    CarritoId = carritoItem.CarritoId,
+                    Cantidad = carritoItem.Cantidad,
+                    Precio = carritoItem.Producto.Precio,
+                    Subtotal = carritoItem.Cantidad * carritoItem.Producto.Precio,
+                    Producto = carritoItem.Producto
+                };
 
+                contexto.Facturas.Add(factura);
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return factura.FacturaId;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Error al crear factura individual: {ex.Message}");
+            }
+        }
+
+        public async Task<int> CrearFacturaGlobal()
+        {
+            await using var contexto = await _dbFactory.CreateDbContextAsync();
+            await using var transaction = await contexto.Database.BeginTransactionAsync();
+
+            try
+            {
+                var carritoItems = await contexto.Carrito
+                    .Include(c => c.Producto)
+                    .ToListAsync();
+
+                if (!carritoItems.Any())
+                    throw new Exception("No hay productos en el carrito");
+
+                // Crea una factura por cada producto pero las relacionamos con el mismo CarritoId
+                var facturas = new List<Factura>();
+                var primerItem = carritoItems.First();
+
+                foreach (var item in carritoItems)
+                {
                     var factura = new Factura
                     {
                         Fecha = DateTime.Now,
-                        Total = (decimal)(item.Cantidad * producto.Precio),
+                        Total = (decimal)(item.Cantidad * item.Producto.Precio),
                         ProductoId = item.ProductoId,
-                        CarritoId = item.CarritoId,
+                        CarritoId = primerItem.CarritoId, // Mismo CarritoId para agrupar
                         Cantidad = item.Cantidad,
-                        Precio = producto.Precio,
-                        Subtotal = item.Cantidad * producto.Precio,
-                        Producto = producto
+                        Precio = item.Producto.Precio,
+                        Subtotal = item.Cantidad * item.Producto.Precio,
+                        Producto = item.Producto
                     };
 
                     facturas.Add(factura);
                     contexto.Facturas.Add(factura);
                 }
 
-                var cambios = await contexto.SaveChangesAsync();
-                if (cambios < facturas.Count)
-                    throw new Exception($"Solo se guardaron {cambios} de {facturas.Count} facturas");
+                await contexto.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-                return facturas.First().FacturaId;
+                return primerItem.CarritoId; // Retorna al CarritoId para agrupar
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error en CrearFactura: {ex.Message}\n{ex.StackTrace}");
-                return -1;
+                await transaction.RollbackAsync();
+                throw new Exception($"Error al crear factura global: {ex.Message}");
             }
-        }
-        
-
-        public async Task<Factura> ObtenerFactura(int id)
-        {
-            await using var contexto = await _dbFactory.CreateDbContextAsync();
-            return await contexto.Facturas
-                .Include(f => f.Producto)
-                .FirstOrDefaultAsync(f => f.FacturaId == id);
         }
 
         public async Task<List<Factura>> ObtenerFacturasPorCarrito(int carritoId)
@@ -89,6 +121,20 @@ namespace ProyectoFinalAp1.Services
                 .Include(f => f.Producto)
                 .OrderByDescending(f => f.Fecha)
                 .ToListAsync();
+        }
+
+        public async Task EliminarFacturasTemporales(int carritoId)
+        {
+            await using var contexto = await _dbFactory.CreateDbContextAsync();
+            var facturas = await contexto.Facturas
+                .Where(f => f.CarritoId == carritoId)
+                .ToListAsync();
+
+            if (facturas.Any())
+            {
+                contexto.Facturas.RemoveRange(facturas);
+                await contexto.SaveChangesAsync();
+            }
         }
     }
 }
