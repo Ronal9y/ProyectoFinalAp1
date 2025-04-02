@@ -9,94 +9,129 @@
 
 <PageTitle>Mascotas Disponibles</PageTitle>
 
-<div class="container">
-    <div class="card shadow-lg">
-        <div class="card-header bg-dark text-white py-2 rounded">
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="font-weight-bold text-center w-100">Mascotas Disponibles</h3>
-                <a href="/CarritoMascotas" class="btn btn-outline-light position-relative">
-                    <i class="bi bi-cart-fill"></i>
-                    @if (totalMascotas > 0)
-                    {
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            @totalMascotas
-                        </span>
-                    }
-                </a>
+<div class="card shadow-lg">
+    <div class="card-header bg-dark text-white py-2 rounded">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="font-weight-bold text-center w-100">Mascotas Disponibles</h3>
+            <a href="/CarritoMascotas" class="btn btn-outline-light position-relative">
+                <i class="bi bi-cart-fill"></i>
+                @if (totalMascotas > 0)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @totalMascotas
+                    </span>
+                }
+                else
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                        0
+                    </span>
+                }
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-3 align-items-center px-3">
+        <div class="col-md-3">
+            <label for="Filtro" class="form-label">Filtrar por:</label>
+            <select class="form-select" @bind="CriterioBusqueda">
+                <option value="Todos">Todos</option>
+                <option value="Id">ID</option>
+                <option value="Tipo">Tipo</option>
+                <option value="Raza">Raza</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+            <div class="input-group">
+                <input type="text" class="form-control"
+                       @bind="TextoBusqueda"
+                       placeholder="Ingrese su búsqueda..." />
+                <button class="btn btn-primary" type="button" @onclick="BuscarMascotas">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="LimpiarFiltros">
+                    <i class="bi bi-x-circle"></i> Limpiar
+                </button>
             </div>
         </div>
 
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label"><strong>Filtrar por:</strong></label>
-                    <select class="form-select" @bind="CriterioBusqueda">
-                        <option value="Todos">Todos</option>
-                        <option value="Id">ID</option>
-                        <option value="Tipo">Tipo</option>
-                        <option value="Raza">Raza</option>
-                    </select>
-                    <input type="text" class="form-control mt-2" @bind="TextoBusqueda" placeholder="Ingrese su búsqueda..." />
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-primary me-2" @onclick="BuscarMascotas">
-                        <i class="bi bi-search"></i> Buscar
-                    </button>
-                    <button class="btn btn-secondary" @onclick="LimpiarFiltros">
-                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar
-                    </button>
-                </div>
-            </div>
+    </div>
 
-            @if (!mascotas.Any())
-            {
+    <div class="row p-3">
+        @if (!mascotas.Any())
+        {
+            <div class="col-12">
                 <div class="alert alert-warning text-center">No se encontraron mascotas con los criterios especificados</div>
-            }
-            else
+            </div>
+        }
+        else
+        {
+            @foreach (var mascota in mascotas)
             {
-                <div class="row">
-                    @foreach (var mascota in mascotas)
-                    {
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                @if (!string.IsNullOrEmpty(mascota.ImageURL))
-                                {
-                                    <img src="@mascota.ImageURL" class="card-img-top" alt="Imagen de @mascota.Tipo" />
-                                }
-                                <div class="card-body">
-                                    <h5 class="card-title">@mascota.Tipo</h5>
-                                    <p class="text-muted"><strong>ID:</strong> @mascota.MascotaId</p>
-                                    <p><strong>Raza:</strong> @mascota.Raza</p>
-                                    <p><strong>Fecha Nacimiento:</strong> @mascota.FechaDeNacimiento.ToShortDateString()</p>
-                                    <p><strong>Precio:</strong> @mascota.Precio.ToString("C")</p>
-                                    <p><strong>Disponibles:</strong> @mascota.Cantidad</p>
-                                    <div class="d-flex justify-content-between">
-                                        <button class="btn btn-sm btn-outline-primary" @onclick="() => EditarMascota(mascota.MascotaId)">
-                                            <i class="bi bi-pencil"></i> Editar
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(mascota.MascotaId)">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </button>
-                                    </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        @if (!string.IsNullOrEmpty(mascota.ImageURL))
+                        {
+                            <div class="text-center mb-3" style="height: 200px; overflow: hidden;">
+                                <img src="@mascota.ImageURL"
+                                     class="img-fluid rounded"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     alt="@mascota.Tipo" />
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@mascota.Tipo</h5>
+                            <p class="card-text text-muted"><strong>ID:</strong> @mascota.MascotaId</p>
+
+                            <div class="mb-2">
+                                <p class="mb-1"><strong>Raza:</strong><span class="badge bg-primary"> @mascota.Raza</span></p>
+                                <p class="mb-1"><strong>Fecha Nacimiento:</strong> @mascota.FechaDeNacimiento.ToShortDateString()</p>
+                                <p class="mb-1"><strong>Donador:</strong> @mascota.Donador?.Nombre</p>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted"><strong>Disponibles:</strong> @mascota.Cantidad</span>
+                                <span class="text-success fw-bold">@mascota.Precio.ToString("C")</span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="input-group" style="width: 150px;">
+                                    <button class="btn btn-outline-secondary" @onclick="() => AjustarCantidad(mascota, -1)" disabled="@(mascota.CantidadSeleccionada <= 1)">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <input type="number" class="form-control text-center"
+                                           @bind="@mascota.CantidadSeleccionada"
+                                           @bind:event="oninput"
+                                           min="1"
+                                           max="@mascota.Cantidad" />
+                                    <button class="btn btn-outline-secondary" @onclick="() => AjustarCantidad(mascota, 1)" disabled="@(mascota.CantidadSeleccionada >= mascota.Cantidad)">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
                                 </div>
                             </div>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(mascota)">
+                                    <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                                </button>
+
+                            </div>
                         </div>
-                    }
+                    </div>
                 </div>
             }
-        </div>
-        <div class="card-footer text-center">
-            <button class="btn btn-success" @onclick="NuevaMascota">
-                <i class="bi bi-plus-circle"></i> Nueva Mascota
-            </button>
-        </div>
+        }
     </div>
 </div>
 
 @code {
-    private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();   
+    private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
+    //private List<MascotaConCantidad> Cantimascotas = new List<MascotaConCantidad>();
     private string CriterioBusqueda = "Todos";
+    private int IdBusqueda;
     private string TextoBusqueda = string.Empty;
+    private string RazaBusqueda = string.Empty;
     private int totalMascotas = 0;
 
     protected override async Task OnInitializedAsync()
@@ -107,7 +142,7 @@
 
     private async Task CargarMascotas()
     {
-        mascotas = await mascotasService.ListarMascotas();
+        var mascotasDb = await mascotasService.ListarMascotas();
     }
 
     private async Task BuscarMascotas()
@@ -134,8 +169,52 @@
     private async Task LimpiarFiltros()
     {
         CriterioBusqueda = "Todos";
+        IdBusqueda = 0;
         TextoBusqueda = string.Empty;
+        RazaBusqueda = string.Empty;
         await CargarMascotas();
+    }
+
+    private void AjustarCantidad(ProyectoFinalAp1.Models.Mascotas mascota, int cambio)
+    {
+        var nuevaCantidad = mascota.CantidadSeleccionada + cambio;
+        mascota.CantidadSeleccionada = Math.Clamp(nuevaCantidad, 1, mascota.Cantidad);
+    }
+
+    private void ValidarCantidad(ProyectoFinalAp1.Models.Mascotas mascota)
+    {
+        if (mascota.CantidadSeleccionada < 1)
+        {
+            mascota.CantidadSeleccionada = 1;
+        }
+        else if (mascota.CantidadSeleccionada > mascota.Cantidad)
+        {
+            mascota.CantidadSeleccionada = mascota.Cantidad;
+        }
+    }
+
+    private async Task AgregarAlCarrito(ProyectoFinalAp1.Models.Mascotas mascota)
+    {
+        if (mascota.CantidadSeleccionada < 1 || mascota.CantidadSeleccionada > mascota.Cantidad)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "La cantidad seleccionada no es válida");
+            return;
+        }
+
+        try
+        {
+            await carritoMascotasService.AgregarAlCarritoMascotasAsync(
+                mascota.MascotaId,
+                mascota.CantidadSeleccionada,
+                $"{mascota.Tipo} - {mascota.Raza}");
+
+            totalMascotas = await carritoMascotasService.ObtenerTotalMascotasEnCarritoAsync();
+            await JSRuntime.InvokeVoidAsync("alert", "Mascota agregada al carrito");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error: {ex.Message}");
+        }
     }
 
     private void NuevaMascota()
@@ -157,4 +236,24 @@
             await CargarMascotas();
         }
     }
+
+    // private class MascotaConCantidad : Mascotas
+    // {
+    //     public MascotaConCantidad() { }
+
+    //     public MascotaConCantidad(ProyectoFinalAp1.Models.Mascotas mascota)
+    //     {
+    //         MascotaId = mascota.MascotaId;
+    //         Tipo = mascota.Tipo;
+    //         Raza = mascota.Raza;
+    //         FechaDeNacimiento = mascota.FechaDeNacimiento;
+    //         Precio = mascota.Precio;
+    //         Cantidad = mascota.Cantidad;
+    //         ImageURL = mascota.ImageURL;
+    //         Donador = mascota.Donador;
+    //         CantidadSeleccionada = 1;
+    //     }
+
+    //     public int CantidadSeleccionada { get; set; } = 1;
+    // }
 }
