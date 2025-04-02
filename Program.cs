@@ -8,6 +8,7 @@ global using ProyectoFinalAp1.Data;
 global using ProyectoFinalAp1.Services;
 global using ProyectoFinalAp1.Models;
 global using Microsoft.EntityFrameworkCore.Design;
+using Blazored.Toast;
 
 namespace ProyectoFinalAp1
 {
@@ -22,6 +23,7 @@ namespace ProyectoFinalAp1
                 .AddInteractiveServerComponents();
 
             builder.Services.AddBlazorBootstrap();
+            builder.Services.AddBlazoredToast();
 
             var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
             builder.Services.AddDbContextFactory<ApplicationDbContext>(o => o.UseSqlServer(ConStr));
