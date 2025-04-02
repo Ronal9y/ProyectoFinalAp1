@@ -2,7 +2,6 @@
 @using ProyectoFinalAp1.Services
 @using ProyectoFinalAp1.Models
 @inject CarritoService CarritoService
-@inject FacturaService FacturaService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 
@@ -66,7 +65,6 @@ else
 
 @code {
     private List<ProyectoFinalAp1.Models.Carrito> carritoItems = new List<ProyectoFinalAp1.Models.Carrito>();
-
     protected override async Task OnInitializedAsync()
     {
         await CargarCarrito();
@@ -115,19 +113,13 @@ else
 
             if (!confirmado) return;
 
-            var resultado = await CarritoService.ComprarProductoYGenerarFactura(carritoId);
+            var resultado = await CarritoService.ComprarProducto(carritoId);
 
             if (resultado)
             {
                 carritoItems.RemoveAll(x => x.CarritoId == carritoId);
                 StateHasChanged();
-
-                var facturas = await FacturaService.ObtenerFacturasPorCarrito(carritoId);
-                if (facturas.Any())
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", "Producto comprado con éxito");
-                    NavigationManager.NavigateTo($"/Facturas/FacturasProducto?carritoId={carritoId}");
-                }
+                await JSRuntime.InvokeVoidAsync("alert", "Producto comprado con éxito");
             }
             else
             {
@@ -150,23 +142,13 @@ else
 
             if (!confirmado) return;
 
-            var resultado = await CarritoService.ComprarTodoYGenerarFactura();
+            var resultado = await CarritoService.ComprarCarrito();
 
             if (resultado)
             {
                 carritoItems.Clear();
                 StateHasChanged();
-
-                var primerItemId = carritoItems.FirstOrDefault()?.CarritoId ?? 0;
-                if (primerItemId > 0)
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
-                    NavigationManager.NavigateTo($"/Facturas/FacturasProducto?carritoId={primerItemId}");
-                }
-                else
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", "Compra realizada pero no se pudo mostrar la factura");
-                }
+                await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
             }
             else
             {
