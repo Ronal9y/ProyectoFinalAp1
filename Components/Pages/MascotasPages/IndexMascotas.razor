@@ -55,11 +55,7 @@
                 </button>
             </div>
         </div>
-        <div class="col-md-3 text-end">
-            <button class="btn btn-success" @onclick="NuevaMascota">
-                <i class="bi bi-plus-circle"></i> Nueva Mascota
-            </button>
-        </div>
+        
     </div>
 
     <div class="row p-3">
@@ -105,7 +101,7 @@
                                         <i class="bi bi-dash"></i>
                                     </button>
                                     <input type="number" class="form-control text-center"
-                                           @bind="mascota.CantidadSeleccionada"
+                                           @bind="@mascota.CantidadSeleccionada"
                                            @bind:event="oninput"
                                            min="1"
                                            max="@mascota.Cantidad" />
@@ -119,14 +115,7 @@
                                 <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(mascota)">
                                     <i class="bi bi-cart-plus"></i> Agregar al Carrito
                                 </button>
-                                <div class="d-flex justify-content-between">
-                                    <button class="btn btn-sm btn-outline-primary" @onclick="() => EditarMascota(mascota.MascotaId)">
-                                        <i class="bi bi-pencil"></i> Editar
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(mascota.MascotaId)">
-                                        <i class="bi bi-trash"></i> Eliminar
-                                    </button>
-                                </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -137,7 +126,8 @@
 </div>
 
 @code {
-    private List<MascotaConCantidad> mascotas = new List<MascotaConCantidad>();
+    private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
+    //private List<MascotaConCantidad> Cantimascotas = new List<MascotaConCantidad>();
     private string CriterioBusqueda = "Todos";
     private int IdBusqueda;
     private string TextoBusqueda = string.Empty;
@@ -153,36 +143,22 @@
     private async Task CargarMascotas()
     {
         var mascotasDb = await mascotasService.ListarMascotas();
-        mascotas = mascotasDb.Select(m => new MascotaConCantidad
-            {
-                MascotaId = m.MascotaId,
-                Tipo = m.Tipo,
-                Raza = m.Raza,
-                FechaDeNacimiento = m.FechaDeNacimiento,
-                Precio = m.Precio,
-                Cantidad = m.Cantidad,
-                ImageURL = m.ImageURL,
-                Donador = m.Donador,
-                CantidadSeleccionada = 1
-            }).ToList();
     }
 
-    private async Task BuscarMascotas()
+     private async Task BuscarMascotas()
     {
-        if (CriterioBusqueda == "Id" && IdBusqueda > 0)
+        if (CriterioBusqueda == "Id" && int.TryParse(TextoBusqueda, out int id))
         {
-            var mascota = await mascotasService.Buscar(IdBusqueda);
-            mascotas = mascota != null ? new List<MascotaConCantidad> { new MascotaConCantidad(mascota) } : new();
+            var mascota = await mascotasService.Buscar(id);
+            mascotas = mascota != null ? new List<ProyectoFinalAp1.Models.Mascotas> { mascota } : new();
         }
         else if (CriterioBusqueda == "Tipo")
         {
-            var mascotasDb = await mascotasService.Listar(p => p.Tipo.Contains(TextoBusqueda));
-            mascotas = mascotasDb.Select(m => new MascotaConCantidad(m)).ToList();
+            mascotas = await mascotasService.ListarMascotas(p => p.Tipo.Contains(TextoBusqueda));
         }
         else if (CriterioBusqueda == "Raza")
         {
-            var mascotasDb = await mascotasService.Listar(p => p.Raza.Contains(RazaBusqueda));
-            mascotas = mascotasDb.Select(m => new MascotaConCantidad(m)).ToList();
+            mascotas = await mascotasService.ListarMascotas(p => p.Raza.Contains(TextoBusqueda));
         }
         else
         {
@@ -199,13 +175,13 @@
         await CargarMascotas();
     }
 
-    private void AjustarCantidad(MascotaConCantidad mascota, int cambio)
+    private void AjustarCantidad(ProyectoFinalAp1.Models.Mascotas mascota, int cambio)
     {
         var nuevaCantidad = mascota.CantidadSeleccionada + cambio;
         mascota.CantidadSeleccionada = Math.Clamp(nuevaCantidad, 1, mascota.Cantidad);
     }
 
-    private void ValidarCantidad(MascotaConCantidad mascota)
+    private void ValidarCantidad(ProyectoFinalAp1.Models.Mascotas mascota)
     {
         if (mascota.CantidadSeleccionada < 1)
         {
@@ -217,7 +193,7 @@
         }
     }
 
-    private async Task AgregarAlCarrito(MascotaConCantidad mascota)
+    private async Task AgregarAlCarrito(ProyectoFinalAp1.Models.Mascotas mascota)
     {
         if (mascota.CantidadSeleccionada < 1 || mascota.CantidadSeleccionada > mascota.Cantidad)
         {
@@ -261,23 +237,23 @@
         }
     }
 
-    private class MascotaConCantidad : Mascotas
-    {
-        public MascotaConCantidad() { }
+    // private class MascotaConCantidad : Mascotas
+    // {
+    //     public MascotaConCantidad() { }
 
-        public MascotaConCantidad(Mascotas mascota)
-        {
-            MascotaId = mascota.MascotaId;
-            Tipo = mascota.Tipo;
-            Raza = mascota.Raza;
-            FechaDeNacimiento = mascota.FechaDeNacimiento;
-            Precio = mascota.Precio;
-            Cantidad = mascota.Cantidad;
-            ImageURL = mascota.ImageURL;
-            Donador = mascota.Donador;
-            CantidadSeleccionada = 1;
-        }
+    //     public MascotaConCantidad(ProyectoFinalAp1.Models.Mascotas mascota)
+    //     {
+    //         MascotaId = mascota.MascotaId;
+    //         Tipo = mascota.Tipo;
+    //         Raza = mascota.Raza;
+    //         FechaDeNacimiento = mascota.FechaDeNacimiento;
+    //         Precio = mascota.Precio;
+    //         Cantidad = mascota.Cantidad;
+    //         ImageURL = mascota.ImageURL;
+    //         Donador = mascota.Donador;
+    //         CantidadSeleccionada = 1;
+    //     }
 
-        public int CantidadSeleccionada { get; set; } = 1;
-    }
+    //     public int CantidadSeleccionada { get; set; } = 1;
+    // }
 }
