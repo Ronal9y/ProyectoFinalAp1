@@ -61,6 +61,7 @@ h1:focus {
 
 /*body {
     background: linear-gradient(45deg, #F9942A, #F9942A);
-    height: 100vh;*/ /* Asegúrate de que el fondo cubra toda la altura */
-    /*margin: 0;*/ /* Elimina el margen para que no haya espacios */
-/*}*/
+    height: 100vh;
+    margin: 0; 
+
+}*/
