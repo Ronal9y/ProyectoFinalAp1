@@ -1,168 +1,195 @@
-﻿@page "/Producto/ComprarProductso"
-@using ProyectoFinalAp1.Services
-@using ProyectoFinalAp1.Models
-@inject ProductoService productoService
+﻿@page "/Producto/IndexAdmin"
+@using System.Linq.Expressions
+@inject ProductoService productoservice
 @inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<PageTitle>Productos en Existencia</PageTitle>
+<PageTitle>Índice de Productos</PageTitle>
 
-<div class="card shadow-lg">
-    <div class="card-header bg-dark text-white py-2 rounded">
-        <div class="d-flex justify-content-between align-items-center">
-            <h3 class="font-weight-bold text-center w-100">Productos en Existencia</h3>
-            <a href="/Carrito" class="btn btn-outline-light position-relative">
-                <i class="bi bi-cart-fill"></i>
-                @if (totalProductos > 0)
-                {
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        @totalProductos
-                    </span>
-                }
-                else
-                {
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                        0
-                    </span>
-                }
-            </a>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Listado de Productos</h5>
         </div>
-    </div>
-
-    <div class="row mb-3 align-items-center px-3">
-        <div class="col-md-3">
-            <label for="Filtro" class="form-label">Filtrar por:</label>
-            <select class="form-select" @bind="filtro">
-                <option value="ProductoID">ProductoId</option>
-                <option value="Nombre">Nombre</option>
-                <option value="TipoCategoria">Categoria</option>
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
-            <div class="input-group">
-                <input type="text" class="form-control" @bind="valorFiltro" placeholder="Buscar" />
-                <button class="btn btn-primary" type="button" @onclick="Buscar">
-                    <i class="bi bi-search"></i> Buscar
-                </button>
-            </div>
-        </div>
-        <div class="col-md-3 text-end">
-            <a href="/Producto/Create" class="btn btn-success">
-                <i class="bi bi-plus-circle"></i> Crear
-            </a>
-        </div>
-    </div>
-
-    <div class="row p-3">
-        @if (Listar != null && Listar.Count > 0)
-        {
-            @foreach (var producto in Listar)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">@producto.Nombre</h5>
-                            <p class="card-text">@producto.Descripcion</p>
-                            <p class="card-text"><strong>Categoría:</strong> @producto.TipoCategoria</p>
-                            <p class="card-text"><strong>Precio:</strong> @producto.Precio.ToString("C")</p>
-                            <p class="card-text"><strong>Stock:</strong> @producto.Stock</p>
-
-                            <div>
-                                <label for="cantidad-@producto.ProductoId">Cantidad:</label>
-                                <input type="number" id="cantidad-@producto.ProductoId" min="1" max="@producto.Stock" class="form-control" @bind="producto.CantidadSeleccionada" />
-                            </div>
-                            <button class="btn btn-primary btn-block mt-2" @onclick="() => AgregarAlCarrito(producto)">
-                                <i class="fa-solid fa-cart-plus"></i> Agregar al Carrito
-                            </button>
-                        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Buscar por:</strong></label>
+                    <div class="input-group">
+                        <select class="form-select" @bind="CriterioBusqueda">
+                            <option value="Todos">Todos</option>
+                            <option value="Id">ID</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Categoria">Categoría</option>
+                        </select>
+                        @if (CriterioBusqueda == "Id")
+                        {
+                            <input type="number" class="form-control" @bind="IdBusqueda" placeholder="ID del producto" />
+                        }
+                        else if (CriterioBusqueda == "Nombre")
+                        {
+                            <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Nombre del producto" />
+                        }
+                        else if (CriterioBusqueda == "Categoria")
+                        {
+                            <input type="text" class="form-control" @bind="CategoriaBusqueda" placeholder="Tipo de categoría" />
+                        }
                     </div>
                 </div>
-            }
-        }
-        else
-        {
-            <div class="col-12 text-center">
-                <p>No se encontraron resultados</p>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Filtrar por cantidad:</strong></label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" @bind="CantidadMinima" placeholder="Mínimo" />
+                        <span class="input-group-text">-</span>
+                        <input type="number" class="form-control" @bind="CantidadMaxima" placeholder="Máximo" />
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary me-2" @onclick="BuscarProductos">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <button class="btn btn-secondary" @onclick="LimpiarFiltros">
+                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                    </button>
+                </div>
             </div>
-        }
-    </div>
 
+            @if (!productos.Any())
+            {
+                <div class="alert alert-warning text-center">No se encontraron productos con los criterios especificados</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Tipo Categoría</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Imagen</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var producto in productos)
+                            {
+                                <tr>
+                                    <td>@producto.ProductoId</td>
+                                    <td>@producto.Nombre</td>
+                                    <td>@(producto.Descripcion?.Length > 30 ? producto.Descripcion.Substring(0, 30) + "..." : producto.Descripcion)</td>
+                                    <td>@producto.TipoCategoria</td>
+                                    <td>@producto.Precio.ToString("C")</td>
+                                    <td>@producto.Stock</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(producto.ImagenURL))
+                                        {
+                                            <img src="@producto.ImagenURL" style="width: 50px; height: 50px;" class="img-thumbnail" />
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin imagen</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => EditarProducto(producto.ProductoId)">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(producto.ProductoId)">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer text-center">
+            <button class="btn btn-success" @onclick="NuevoProducto">
+                <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
+            </button>
+            <a class="btn btn-secondary" href="/Producto/Index">
+                <i class="bi bi-house-door"></i> Volver al índice
+            </a>
+        </div>
+    </div>
 </div>
 
 @code {
-    private List<ProyectoFinalAp1.Models.Productos> Listar = new List<ProyectoFinalAp1.Models.Productos>();
-    public string filtro { get; set; } = "ProductoID";
-    public string valorFiltro { get; set; } = string.Empty;
-    private int totalProductos = 0;
+
+    private List<ProyectoFinalAp1.Models.Productos> productos = new List<ProyectoFinalAp1.Models.Productos>();
+    private string CriterioBusqueda = "Todos";
+    private int IdBusqueda;
+    private string TextoBusqueda = string.Empty;
+    private string CategoriaBusqueda = string.Empty;
+    private int? CantidadMinima;
+    private int? CantidadMaxima;
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await productoservice.ListarProducto();
+    }
+
+    private async Task BuscarProductos()
+    {
+        if (CriterioBusqueda == "Id" && IdBusqueda > 0)
         {
-            Listar = await productoService.ListarProducto(p => true);
-            foreach (var producto in Listar)
-            {
-                producto.CantidadSeleccionada = 1;
-            }
-            totalProductos = await productoService.ObtenerTotalProductosEnCarrito();
+            var producto = await productoservice.Buscar(IdBusqueda);
+            productos = producto != null ? new List<ProyectoFinalAp1.Models.Productos> { producto } : new();
         }
-        catch (Exception ex)
+        else if (CriterioBusqueda == "Nombre")
         {
-            Console.WriteLine($"Error al cargar productos: {ex.Message}");
+            productos = await productoservice.ListarProducto(p => p.Nombre.Contains(TextoBusqueda));
+        }
+        else if (CriterioBusqueda == "Categoria")
+        {
+            productos = await productoservice.ListarProducto(p => p.TipoCategoria.Contains(CategoriaBusqueda));
+        }
+        else
+        {
+            productos = await productoservice.ListarProducto();
         }
     }
 
-    public async Task Buscar()
+    private async Task LimpiarFiltros()
     {
-        try
-        {
-            var listaFiltrada = await productoService.ListarProducto(p => true);
-
-            if (!string.IsNullOrEmpty(valorFiltro))
-            {
-                if (filtro == "ProductoID" && int.TryParse(valorFiltro, out int productoId))
-                {
-                    listaFiltrada = listaFiltrada.Where(p => p.ProductoId == productoId).ToList();
-                }
-                else if (filtro == "Nombre")
-                {
-                    listaFiltrada = listaFiltrada
-                        .Where(m => m.Nombre.ToLower().Contains(valorFiltro.ToLower()))
-                        .ToList();
-                }
-                else if (filtro == "Categoria")
-                {
-                    listaFiltrada = listaFiltrada
-                        .Where(m => m.TipoCategoria.ToLower().Contains(valorFiltro.ToLower()))
-                        .ToList();
-                }
-            }
-
-            Listar = listaFiltrada;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al buscar productos: {ex.Message}");
-        }
+        CriterioBusqueda = "Todos";
+        IdBusqueda = 0;
+        TextoBusqueda = string.Empty;
+        CategoriaBusqueda = string.Empty;
+        CantidadMinima = null;
+        CantidadMaxima = null;
+        await CargarProductos();
     }
 
-    private async Task AgregarAlCarrito(ProyectoFinalAp1.Models.Productos producto)
+    private void NuevoProducto()
     {
-        if (producto.CantidadSeleccionada < 1 || producto.CantidadSeleccionada > producto.Stock)
-        {
-            Console.WriteLine("Cantidad no válida");
-            return;
-        }
+        navigationManager.NavigateTo("/Producto/ComprarProducto");
+    }
 
-        try
+    private void EditarProducto(int id)
+    {
+        navigationManager.NavigateTo($"/Producto/EditProducto/{id}");
+    }
+
+    private async Task ConfirmarEliminar(int id)
+    {
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar este producto?");
+        if (confirmado)
         {
-            await productoService.AgregarAlCarrito(producto.ProductoId, producto.CantidadSeleccionada);
-            totalProductos = await productoService.ObtenerTotalProductosEnCarrito();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+            await productoservice.Eliminar(id);
+            await CargarProductos();
         }
     }
 }
