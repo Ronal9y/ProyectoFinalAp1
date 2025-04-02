@@ -1,98 +1,195 @@
-﻿@* @page "/Mascotas/ComprarMascotas"
-@using ProyectoFinalAp1.Models
-@using ProyectoFinalAp1.Services
-@inject MascotasService mascotaService
-@inject CarritoMascotasService carritomascotaService
+﻿@page "/Mascota/IndexAdmin"
+@using System.Linq.Expressions
+@inject MascotasService mascotasService
 @inject NavigationManager navigationManager
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<PageTitle>Comprar Mascotas</PageTitle>
+<PageTitle>Índice de Productos</PageTitle>
 
-<div class="card shadow-lg">
-    <div class="card-header bg-dark text-white py-2 rounded">
-        <div class="d-flex justify-content-between align-items-center">
-            <h3 class="font-weight-bold text-center w-100">Mascotas Disponibles</h3>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Listado de Mascotas</h5>
         </div>
-    </div>
-
-    <div class="row p-3">
-        @foreach (var mascota in ListarMascotas)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="@mascota.ImageURL" class="card-img-top" alt="Imagen de @mascota.Tipo" />
-                    <div class="card-body">
-                        <h5 class="card-title">@mascota.Tipo</h5>
-                        <p class="card-text">Raza: @mascota.Raza</p>
-                        <p class="card-text">Precio: @mascota.Precio.ToString("C")</p>
-                        <p class="card-text">Disponibles: @mascota.Cantidad</p>
-
-                        <div>
-                            <label for="nombreMascota-@mascota.MascotaId">Nombre de la Mascota:</label>
-                            <input type="text" id="nombreMascota-@mascota.MascotaId" class="form-control"
-                                   @bind="nombresMascotas[mascota.MascotaId]"
-                                   placeholder="Escriba el nombre de la mascota" />
-                        </div>
-                        <button class="btn btn-primary btn-block mt-2" @onclick="() => AgregarAlCarrito(mascota)">
-                            <i class="fa-solid fa-cart-plus"></i> Agregar al Carrito
-                        </button>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Buscar por:</strong></label>
+                    <div class="input-group">
+                        <select class="form-select" @bind="CriterioBusqueda">
+                            <option value="Todos">Todos</option>
+                            <option value="Id">ID</option>
+                            <option value="Tipo">Tipo</option>
+                            <option value="Raza">Raza</option>
+                        </select>
+                        @if (CriterioBusqueda == "Id")
+                        {
+                            <input type="number" class="form-control" @bind="IdBusqueda" placeholder="ID de la mascota" />
+                        }
+                        else if (CriterioBusqueda == "Tipo")
+                        {
+                            <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Tipo de Mascota" />
+                        }
+                        else if (CriterioBusqueda == "Raza")
+                        {
+                            <input type="text" class="form-control" @bind="CategoriaBusqueda" placeholder="Raza de la Mascota" />
+                        }
                     </div>
                 </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Filtrar por cantidad:</strong></label>
+                    <div class="input-group">
+                        <InputNumber class="form-control" @bind-Value="CantidadMinima" placeholder="Mínimo" />
+                        <span class="input-group-text">-</span>
+                        <InputNumber class="form-control" @bind-Value="CantidadMaxima" placeholder="Máximo" />
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary me-2" @onclick="BuscarMascotas">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+                    <button class="btn btn-secondary" @onclick="LimpiarFiltros">
+                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                    </button>
+                </div>
             </div>
-        }
+
+            @if (!mascotas.Any())
+            {
+                <div class="alert alert-warning text-center">No se encontraron Mascotas con los criterios especificados</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr class="table-primary">
+                                <th>ID</th>
+                                <th>Tipo</th>
+                                <th>Raza</th>
+                                <th>Fecha de Nacimiento</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Imagen</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mascota in mascotas)
+                            {
+                                <tr>
+                                    <td>@mascota.MascotaId</td>
+                                    <td>@mascota.Tipo</td>
+                                    <td>@(mascota.Raza?.Length > 30 ? mascota.Raza.Substring(0, 30) + "..." : mascota.Raza)</td>
+                                    <td>@mascota.FechaDeNacimiento</td>
+                                    <td>@mascota.Precio.ToString("C")</td>
+                                    <td>@mascota.Cantidad</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(mascota.ImageURL))
+                                        {
+                                            <img src="@mascota.ImageURL" style="width: 50px; height: 50px;" class="img-thumbnail" />
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin imagen</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => EditarMascota(mascota.MascotaId)">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(mascota.MascotaId)">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+        <div class="card-footer text-center">
+            <button class="btn btn-success" @onclick="NuevaMascota">
+                <i class="bi bi-plus-circle"></i> Agregar Nueva Mascota
+            </button>
+            <a class="btn btn-secondary" href="/Mascota/Index">
+                <i class="bi bi-house-door"></i> Volver al índice
+            </a>
+        </div>
     </div>
 </div>
 
 @code {
-    private List<ProyectoFinalAp1.Models.Mascotas> ListarMascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
-    private Dictionary<int, string> nombresMascotas = new Dictionary<int, string>();
+
+    private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
+    private string CriterioBusqueda = "Todos";
+    private int IdBusqueda;
+    private string TextoBusqueda = string.Empty;
+    private string CategoriaBusqueda = string.Empty;
+    private int? CantidadMinima;
+    private int? CantidadMaxima;
 
     protected override async Task OnInitializedAsync()
     {
-        var resultado = await mascotaService.ListarMascotas(p => true);
-        ListarMascotas = resultado is List<ProyectoFinalAp1.Models.Mascotas> lista ?
-                        lista :
-                        resultado.ToList();
-
-        foreach (var mascota in ListarMascotas)
-        {
-            nombresMascotas[mascota.MascotaId] = string.Empty;
-        }
+        await CargarMascotas();
     }
 
-    private async Task AgregarAlCarrito(ProyectoFinalAp1.Models.Mascotas mascota)
+    private async Task CargarMascotas()
     {
-        if (string.IsNullOrWhiteSpace(nombresMascotas[mascota.MascotaId]))
+        mascotas = await mascotasService.ListarMascotas();
+    }
+
+    private async Task BuscarMascotas()
+    {
+        if (CriterioBusqueda == "Id" && IdBusqueda > 0)
         {
-            Console.WriteLine("Debe ingresar el nombre de la mascota.");
-            return;
+            var mascota = await mascotasService.Buscar(IdBusqueda);
+            mascotas = mascota != null ? new List<ProyectoFinalAp1.Models.Mascotas> { mascota } : new();
         }
-
-        try
+        else if (CriterioBusqueda == "Tipo")
         {
-            // Llamada correcta al servicio con 2 parámetros (sin cantidad)
-            bool success = await carritomascotaService.AgregarAlCarritoMascotasAsync(
-                mascota.MascotaId,
-                nombresMascotas[mascota.MascotaId]);
-
-            if (success)
-            {
-                Console.WriteLine($"{nombresMascotas[mascota.MascotaId]} agregado al carrito exitosamente");
-                nombresMascotas[mascota.MascotaId] = string.Empty;
-
-                // Actualización visual del stock
-                mascota.Cantidad--;
-                StateHasChanged();
-            }
-            else
-            {
-                Console.WriteLine("Error: La mascota ya está en el carrito o no hay stock disponible");
-            }
+            mascotas = await mascotasService.ListarMascotas(p => p.Tipo.Contains(TextoBusqueda));
         }
-        catch (Exception ex)
+        else if (CriterioBusqueda == "Raza")
         {
-            Console.WriteLine($"Error al agregar al carrito: {ex.Message}");
+            mascotas = await mascotasService.ListarMascotas(p => p.Raza.Contains(CategoriaBusqueda));
+        }
+        else
+        {
+            mascotas = await mascotasService.ListarMascotas();
         }
     }
-} *@
+
+    private async Task LimpiarFiltros()
+    {
+        CriterioBusqueda = "Todos";
+        IdBusqueda = 0;
+        TextoBusqueda = string.Empty;
+        CategoriaBusqueda = string.Empty;
+        CantidadMinima = null;
+        CantidadMaxima = null;
+        await CargarMascotas();
+    }
+
+    private void NuevaMascota()
+    {
+        navigationManager.NavigateTo("/Mascota/ComprarMascota");
+    }
+
+    private void EditarMascota(int id)
+    {
+        navigationManager.NavigateTo($"/Mascota/EditarMascota/{id}");
+    }
+
+    private async Task ConfirmarEliminar(int id)
+    {
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar esta mascota?");
+        if (confirmado)
+        {
+            await mascotasService.Eliminar(id);
+            await CargarMascotas();
+        }
+    }
+}
