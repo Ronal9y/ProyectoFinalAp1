@@ -58,3 +58,9 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/*body {
+    background: linear-gradient(45deg, #F9942A, #F9942A);
+    height: 100vh;*/ /* Asegúrate de que el fondo cubra toda la altura */
+    /*margin: 0;*/ /* Elimina el margen para que no haya espacios */
+/*}*/

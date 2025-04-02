@@ -3,7 +3,7 @@ using ProyectoFinalAp1.Data;
 using ProyectoFinalAp1.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ProyectoFinalAp1.Services
@@ -20,42 +20,54 @@ namespace ProyectoFinalAp1.Services
         public async Task<int> CrearFacturaMascota(List<CarritoMascotas> itemsCarrito)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
-            await using var transaction = await contexto.Database.BeginTransactionAsync();
 
             try
             {
-                // Verifica que haya items en el carrito
                 if (itemsCarrito == null || !itemsCarrito.Any())
                 {
-                    throw new Exception("No hay mascotas en el carrito para facturar");
+                    Console.WriteLine("Error: No hay items en el carrito de mascotas");
+                    return -1;
                 }
+
+                var facturas = new List<FacturaMascota>();
 
                 foreach (var item in itemsCarrito)
                 {
+                    if (item.Mascota == null)
+                    {
+                        Console.WriteLine($"Error: Mascota no encontrada para item {item.CarritoMascotaId}");
+                        return -1;
+                    }
+
                     var factura = new FacturaMascota
                     {
                         Fecha = DateTime.Now,
-                        Total = (decimal)(item.Cantidad * item.Mascota.Precio),
+                        Total = (decimal)item.Mascota.Precio, // Solo 1 unidad
                         MascotaId = item.MascotaId,
                         CarritoMascotaId = item.CarritoMascotaId,
-                        Cantidad = item.Cantidad,
+                        Cantidad = 1, // Siempre 1
                         Precio = item.Mascota.Precio,
-                        Subtotal = item.Cantidad * item.Mascota.Precio
+                        Subtotal = item.Mascota.Precio,
+                        Mascotas = item.Mascota
                     };
 
                     contexto.FacturaMascotas.Add(factura);
+                    facturas.Add(factura);
                 }
 
-                await contexto.SaveChangesAsync();
-                await transaction.CommitAsync();
+                var cambios = await contexto.SaveChangesAsync();
+                if (cambios < facturas.Count)
+                {
+                    Console.WriteLine($"Error: Solo se guardaron {cambios} de {facturas.Count} facturas");
+                    return -1;
+                }
 
-                // Retorna el ID de la primera factura creada
-                return itemsCarrito.First().CarritoMascotaId;
+                return facturas.First().FacturaMascotaId;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                throw new Exception($"Error al crear la factura de mascota: {ex.Message}");
+                Console.WriteLine($"Error al crear factura mascota: {ex.Message}");
+                return -1;
             }
         }
 
@@ -64,7 +76,7 @@ namespace ProyectoFinalAp1.Services
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.FacturaMascotas
                 .Include(f => f.Mascotas)
-                .Include(f => f.CarritoMascotas)
+                .ThenInclude(m => m.Donador)
                 .FirstOrDefaultAsync(f => f.FacturaMascotaId == id);
         }
 
@@ -73,7 +85,7 @@ namespace ProyectoFinalAp1.Services
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.FacturaMascotas
                 .Include(f => f.Mascotas)
-                .Include(f => f.CarritoMascotas)
+                .ThenInclude(m => m.Donador)
                 .Where(f => f.CarritoMascotaId == carritoMascotaId)
                 .OrderByDescending(f => f.Fecha)
                 .ToListAsync();
@@ -84,7 +96,7 @@ namespace ProyectoFinalAp1.Services
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.FacturaMascotas
                 .Include(f => f.Mascotas)
-                .Include(f => f.CarritoMascotas)
+                .ThenInclude(m => m.Donador)
                 .OrderByDescending(f => f.Fecha)
                 .ToListAsync();
         }

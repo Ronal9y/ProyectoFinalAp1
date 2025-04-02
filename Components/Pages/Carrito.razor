@@ -1,4 +1,4 @@
-﻿@page "/Carrito"
+﻿@page "/CarritoOrigin"
 @using ProyectoFinalAp1.Services
 @using ProyectoFinalAp1.Models
 @inject CarritoService CarritoService
@@ -65,7 +65,7 @@ else
 
     private async Task EliminarDelCarrito(int carritoId)
     {
-        await CarritoService.EliminarDelCarritoAsync(carritoId);
+        await CarritoService.EliminarDelCarrito(carritoId);
         await CargarCarrito(); // Recargar datos
     }
 }

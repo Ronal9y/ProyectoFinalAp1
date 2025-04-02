@@ -2,6 +2,86 @@
   #CUSTOM PROPERTY
 \*-----------------------------------*/
 
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.pet-shop {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.hero-text {
+    font-size: 1.5rem;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    background-color: #ff6600;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #cc5200;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.has-scrollbar {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 10px 0;
+    scrollbar-width: thin;
+}
+
+.scrollbar-item {
+    min-width: 250px;
+}
+
+.category-card {
+    text-align: center;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+    .category-card:hover {
+        transform: translateY(-5px);
+    }
+
+.card-banner img {
+    border-radius: 10px;
+}
+
+
 :root {
     /**
    * colors
