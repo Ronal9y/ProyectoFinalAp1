@@ -1,0 +1,75 @@
+﻿/* Estilos generales */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Tarjetas de producto */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+    .card:hover {
+        transform: scale(1.02);
+    }
+
+.card-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.card-body {
+    text-align: center;
+}
+
+.card img {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+/* Botones */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: white;
+    }
+
+/* Input de cantidad */
+.input-group input {
+    text-align: center;
+}
+
+/* Etiquetas y badges */
+.badge {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+}
+
+/* Contenedor principal */
+.card.shadow-lg {
+    margin: 20px auto;
+    max-width: 1100px;
+    padding: 20px;
+}
+
+/* Estilos del carrito */
+.position-relative .badge {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+}

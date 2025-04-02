@@ -8,6 +8,7 @@ global using ProyectoFinalAp1.Data;
 global using ProyectoFinalAp1.Services;
 global using ProyectoFinalAp1.Models;
 global using Microsoft.EntityFrameworkCore.Design;
+using Blazored.Toast;
 
 namespace ProyectoFinalAp1
 {
@@ -22,6 +23,7 @@ namespace ProyectoFinalAp1
                 .AddInteractiveServerComponents();
 
             builder.Services.AddBlazorBootstrap();
+            builder.Services.AddBlazoredToast();
 
             var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
             builder.Services.AddDbContextFactory<ApplicationDbContext>(o => o.UseSqlServer(ConStr));
@@ -50,18 +52,14 @@ namespace ProyectoFinalAp1
             })
                 .AddIdentityCookies();
 
-            //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-            //builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            //    options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
 
-            builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
             var app = builder.Build();
 

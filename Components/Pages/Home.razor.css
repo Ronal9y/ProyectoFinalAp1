@@ -2,6 +2,10 @@
   #CUSTOM PROPERTY
 \*-----------------------------------*/
 
+body {
+    background-color: aqua;
+}
+
 :root {
     /**
    * colors

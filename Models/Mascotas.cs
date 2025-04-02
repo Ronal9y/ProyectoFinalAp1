@@ -25,6 +25,9 @@ public class Mascotas
     [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0.")]
     public int Cantidad { get; set; }
     [Required(ErrorMessage = "La imagen es obligatoria.")]
+
+    [NotMapped]
+    public int CantidadSeleccionada { get; set; } = 1;
     public string ImageURL { get; set; }
     public int DonadorId { get; set; }
     [ForeignKey("DonadorId")]
