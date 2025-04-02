@@ -41,7 +41,7 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label for="ValorFiltro" class="form-label">Búsqueda:</label>
+            <label for="ValorFiltro" class="form-label">B&uacute;squeda:</label>
             <div class="input-group">
                 <input type="text" class="form-control"
                        @bind="TextoBusqueda"
@@ -222,7 +222,7 @@
     {
         if (producto.CantidadSeleccionada < 1 || producto.CantidadSeleccionada > producto.Stock)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "La cantidad seleccionada no es válida");
+            await JSRuntime.InvokeVoidAsync("alert", "La cantidad seleccionada no es v&aacute;lida");
             return;
         }
 
@@ -250,7 +250,7 @@
 
     private async Task ConfirmarEliminar(int id)
     {
-        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar este producto?");
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Est&aacute seguro que desea eliminar este producto?");
         if (confirmado)
         {
             await productoservice.Eliminar(id);
