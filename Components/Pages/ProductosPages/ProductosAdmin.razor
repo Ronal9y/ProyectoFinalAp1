@@ -1,0 +1,208 @@
+﻿@page "/Producto/IndexAdmin"
+@using System.Linq.Expressions
+@inject ProductoService productoservice
+@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Índice de Productos</PageTitle>
+
+<style>
+    .bg-orange {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .btn-orange {
+        background-color: #FF8000 !important;
+        border-color: #FF8000 !important;
+        color: white !important;
+    }
+
+        .btn-orange:hover {
+            background-color: #e67300 !important;
+            border-color: #e67300 !important;
+        }
+
+    .table-orange th {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .btn-custom {
+        min-width: 150px;
+    }
+
+    .search-container {
+        gap: 0.5rem;
+    }
+</style>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header bg-orange">
+            <h5 class="card-title mb-0">Listado de Productos</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3 justify-content-between">
+                <div class="col-md-9 d-flex align-items-end search-container">
+                    <!-- Grupo de búsqueda -->
+                    <div class="input-group" style="width: 180px;">
+                        <select class="form-select" @bind="CriterioBusqueda">
+                            <option value="Todos">Todos</option>
+                            <option value="Id">ID</option>
+                            <option value="Nombre">Nombre</option>
+                            <option value="Categoria">Categoría</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" style="width: 250px;">
+                        <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Ingrese su búsqueda..." />
+                    </div>
+
+                    <button class="btn btn-orange btn-sm btn-custom" @onclick="BuscarProductos">
+                        <i class="bi bi-search"></i> Buscar
+                    </button>
+
+                    <button class="btn btn-secondary btn-sm btn-custom" @onclick="LimpiarFiltros">
+                        <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                    </button>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end justify-content-end">
+                    <!-- Botón de agregar -->
+                    <button class="btn btn-orange btn-sm btn-custom" @onclick="NuevoProducto">
+                        <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
+                    </button>
+                </div>
+            </div>
+
+            @if (!productos.Any())
+            {
+                <div class="alert alert-warning text-center">No se encontraron productos</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr class="table-orange">
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Tipo Categoría</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                                <th>Imagen</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var producto in productos)
+                            {
+                                <tr>
+                                    <td>@producto.ProductoId</td>
+                                    <td>@producto.Nombre</td>
+                                    <td>@(producto.Descripcion?.Length > 30 ? producto.Descripcion.Substring(0, 30) + "..." : producto.Descripcion)</td>
+                                    <td>@producto.TipoCategoria</td>
+                                    <td>@producto.Precio.ToString("C")</td>
+                                    <td>@producto.Stock</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(producto.ImagenURL))
+                                        {
+                                            <img src="@producto.ImagenURL" style="width: 50px; height: 50px;" class="img-thumbnail" />
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Sin imagen</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => EditarProducto(producto.ProductoId)">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmarEliminar(producto.ProductoId)">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ProyectoFinalAp1.Models.Productos> productos = new List<ProyectoFinalAp1.Models.Productos>();
+    private string TextoBusqueda = string.Empty;
+    private string CriterioBusqueda = "Todos";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await productoservice.ListarProducto();
+    }
+
+    private async Task BuscarProductos()
+    {
+        var query = await productoservice.ListarProducto();
+
+        if (!string.IsNullOrWhiteSpace(TextoBusqueda))
+        {
+            if (CriterioBusqueda == "Id" && int.TryParse(TextoBusqueda, out int id))
+            {
+                query = query.Where(p => p.ProductoId == id).ToList();
+            }
+            else if (CriterioBusqueda == "Nombre")
+            {
+                query = query.Where(p => p.Nombre.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else if (CriterioBusqueda == "Categoria")
+            {
+                query = query.Where(p => p.TipoCategoria.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else
+            {
+                query = query.Where(p => p.Nombre.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                                         p.TipoCategoria.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                                         p.ProductoId.ToString().Contains(TextoBusqueda)).ToList();
+            }
+        }
+
+        productos = query;
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        TextoBusqueda = string.Empty;
+        CriterioBusqueda = "Todos";
+        await CargarProductos();
+    }
+
+    private void NuevoProducto()
+    {
+        navigationManager.NavigateTo("/Producto/ComprarProducto");
+    }
+
+    private void EditarProducto(int id)
+    {
+        navigationManager.NavigateTo($"/Producto/EditProducto/{id}");
+    }
+
+    private async Task ConfirmarEliminar(int id)
+    {
+        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar este producto?");
+        if (confirmado)
+        {
+            await productoservice.Eliminar(id);
+            await CargarProductos();
+        }
+    }
+}
