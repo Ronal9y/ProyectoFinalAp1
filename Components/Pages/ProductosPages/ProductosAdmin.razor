@@ -7,64 +7,86 @@
 
 <PageTitle>Índice de Productos</PageTitle>
 
+<style>
+    .bg-orange {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .btn-orange {
+        background-color: #FF8000 !important;
+        border-color: #FF8000 !important;
+        color: white !important;
+    }
+
+        .btn-orange:hover {
+            background-color: #e67300 !important;
+            border-color: #e67300 !important;
+        }
+
+    .table-orange th {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .btn-custom {
+        min-width: 150px;
+    }
+
+    .search-container {
+        gap: 0.5rem;
+    }
+</style>
+
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-orange">
             <h5 class="card-title mb-0">Listado de Productos</h5>
         </div>
         <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label"><strong>Buscar por:</strong></label>
-                    <div class="input-group">
+            <div class="row mb-3 justify-content-between">
+                <div class="col-md-9 d-flex align-items-end search-container">
+                    <!-- Grupo de búsqueda -->
+                    <div class="input-group" style="width: 180px;">
                         <select class="form-select" @bind="CriterioBusqueda">
                             <option value="Todos">Todos</option>
                             <option value="Id">ID</option>
                             <option value="Nombre">Nombre</option>
                             <option value="Categoria">Categoría</option>
                         </select>
-                        @if (CriterioBusqueda == "Id")
-                        {
-                            <input type="number" class="form-control" @bind="IdBusqueda" placeholder="ID del producto" />
-                        }
-                        else if (CriterioBusqueda == "Nombre")
-                        {
-                            <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Nombre del producto" />
-                        }
-                        else if (CriterioBusqueda == "Categoria")
-                        {
-                            <input type="text" class="form-control" @bind="CategoriaBusqueda" placeholder="Tipo de categoría" />
-                        }
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label"><strong>Filtrar por cantidad:</strong></label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" @bind="CantidadMinima" placeholder="Mínimo" />
-                        <span class="input-group-text">-</span>
-                        <input type="number" class="form-control" @bind="CantidadMaxima" placeholder="Máximo" />
+
+                    <div class="input-group" style="width: 250px;">
+                        <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Ingrese su búsqueda..." />
                     </div>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-primary me-2" @onclick="BuscarProductos">
+
+                    <button class="btn btn-orange btn-sm btn-custom" @onclick="BuscarProductos">
                         <i class="bi bi-search"></i> Buscar
                     </button>
-                    <button class="btn btn-secondary" @onclick="LimpiarFiltros">
+
+                    <button class="btn btn-secondary btn-sm btn-custom" @onclick="LimpiarFiltros">
                         <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                    </button>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end justify-content-end">
+                    <!-- Botón de agregar -->
+                    <button class="btn btn-orange btn-sm btn-custom" @onclick="NuevoProducto">
+                        <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
                     </button>
                 </div>
             </div>
 
             @if (!productos.Any())
             {
-                <div class="alert alert-warning text-center">No se encontraron productos con los criterios especificados</div>
+                <div class="alert alert-warning text-center">No se encontraron productos</div>
             }
             else
             {
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
                         <thead>
-                            <tr class="table-primary">
+                            <tr class="table-orange">
                                 <th>ID</th>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
@@ -110,26 +132,13 @@
                 </div>
             }
         </div>
-        <div class="card-footer text-center">
-            <button class="btn btn-success" @onclick="NuevoProducto">
-                <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
-            </button>
-            <a class="btn btn-secondary" href="/Producto/Index">
-                <i class="bi bi-house-door"></i> Volver al índice
-            </a>
-        </div>
     </div>
 </div>
 
 @code {
-
     private List<ProyectoFinalAp1.Models.Productos> productos = new List<ProyectoFinalAp1.Models.Productos>();
-    private string CriterioBusqueda = "Todos";
-    private int IdBusqueda;
     private string TextoBusqueda = string.Empty;
-    private string CategoriaBusqueda = string.Empty;
-    private int? CantidadMinima;
-    private int? CantidadMaxima;
+    private string CriterioBusqueda = "Todos";
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,33 +152,37 @@
 
     private async Task BuscarProductos()
     {
-        if (CriterioBusqueda == "Id" && IdBusqueda > 0)
+        var query = await productoservice.ListarProducto();
+
+        if (!string.IsNullOrWhiteSpace(TextoBusqueda))
         {
-            var producto = await productoservice.Buscar(IdBusqueda);
-            productos = producto != null ? new List<ProyectoFinalAp1.Models.Productos> { producto } : new();
+            if (CriterioBusqueda == "Id" && int.TryParse(TextoBusqueda, out int id))
+            {
+                query = query.Where(p => p.ProductoId == id).ToList();
+            }
+            else if (CriterioBusqueda == "Nombre")
+            {
+                query = query.Where(p => p.Nombre.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else if (CriterioBusqueda == "Categoria")
+            {
+                query = query.Where(p => p.TipoCategoria.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else
+            {
+                query = query.Where(p => p.Nombre.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                                         p.TipoCategoria.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                                         p.ProductoId.ToString().Contains(TextoBusqueda)).ToList();
+            }
         }
-        else if (CriterioBusqueda == "Nombre")
-        {
-            productos = await productoservice.ListarProducto(p => p.Nombre.Contains(TextoBusqueda));
-        }
-        else if (CriterioBusqueda == "Categoria")
-        {
-            productos = await productoservice.ListarProducto(p => p.TipoCategoria.Contains(CategoriaBusqueda));
-        }
-        else
-        {
-            productos = await productoservice.ListarProducto();
-        }
+
+        productos = query;
     }
 
     private async Task LimpiarFiltros()
     {
-        CriterioBusqueda = "Todos";
-        IdBusqueda = 0;
         TextoBusqueda = string.Empty;
-        CategoriaBusqueda = string.Empty;
-        CantidadMinima = null;
-        CantidadMaxima = null;
+        CriterioBusqueda = "Todos";
         await CargarProductos();
     }
 

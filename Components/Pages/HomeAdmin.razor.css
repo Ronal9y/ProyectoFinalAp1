@@ -1,0 +1,21 @@
+﻿.admin-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ocupar toda la pantalla */
+    background: linear-gradient(to bottom, #ffae42, #ff7f00, #ff4500); /* Degradado de tonos naranja */
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+}
+
+    .admin-container h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        background: rgba(255, 200, 150, 0.7); /* Naranja pastel */
+        color: #8B3200; /* Naranja oscuro */
+        padding: 20px 40px;
+        border-radius: 15px;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+        text-transform: uppercase;
+    }

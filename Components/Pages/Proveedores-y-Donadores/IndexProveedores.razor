@@ -1,0 +1,129 @@
+﻿@page "/Proveedores-y-Donadores/Proveedores"
+@inject ProveedoresService ProveedoresService
+
+<PageTitle>Listado de Proveedores</PageTitle>
+
+<style>
+    .bg-orange {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .btn-orange {
+        background-color: #FF8000 !important;
+        border-color: #FF8000 !important;
+        color: white !important;
+    }
+
+        .btn-orange:hover {
+            background-color: #e67300 !important;
+            border-color: #e67300 !important;
+        }
+
+    .table-orange th {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .search-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+</style>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header bg-orange">
+            <h5 class="card-title mb-0 text-center">Listado de Proveedores</h5>
+        </div>
+        <div class="card-body">
+            <!-- Barra de búsqueda -->
+            <div class="row mb-3 justify-content-center">
+                <div class="col-md-8 search-container">
+                    <div class="input-group">
+                        <input type="text"
+                               class="form-control"
+                               @bind="searchTerm"
+                               placeholder="Buscar por nombre o ID"
+                               @oninput="BuscarProveedores" />
+                        <button class="btn btn-orange" type="button" @onclick="LimpiarBusqueda">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Proveedores -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-orange">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Dirección</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (proveedoresFiltrados.Any())
+                        {
+                            @foreach (var proveedor in proveedoresFiltrados)
+                            {
+                                <tr>
+                                    <td>@proveedor.ProveedorId</td>
+                                    <td>@proveedor.Nombre</td>
+                                    <td>@proveedor.Direccion</td>
+                                    <td>@proveedor.Telefono</td>
+                                    <td>@proveedor.Email</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-danger py-4">
+                                    <i class="bi bi-exclamation-circle-fill"></i> No se encontraron proveedores
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string searchTerm = "";
+    private List<Proveedores> proveedores = new();
+    private List<Proveedores> proveedoresFiltrados = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        proveedores = await ProveedoresService.Listar();
+        proveedoresFiltrados = new List<Proveedores>(proveedores);
+    }
+
+    private void BuscarProveedores(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            proveedoresFiltrados = new List<Proveedores>(proveedores);
+        }
+        else
+        {
+            proveedoresFiltrados = proveedores.Where(p =>
+                p.Nombre?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true ||
+                p.ProveedorId.ToString() == searchTerm
+            ).ToList();
+        }
+    }
+
+    private void LimpiarBusqueda()
+    {
+        searchTerm = "";
+        proveedoresFiltrados = new List<Proveedores>(proveedores);
+    }
+}

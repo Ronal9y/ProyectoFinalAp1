@@ -5,52 +5,74 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<PageTitle>Índice de Productos</PageTitle>
+<PageTitle>Índice de Mascotas</PageTitle>
+
+<style>
+    .bg-orange {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .btn-orange {
+        background-color: #FF8000 !important;
+        border-color: #FF8000 !important;
+        color: white !important;
+    }
+
+        .btn-orange:hover {
+            background-color: #e67300 !important;
+            border-color: #e67300 !important;
+        }
+
+    .table-orange th {
+        background-color: #FF8000 !important;
+        color: white !important;
+    }
+
+    .btn-custom {
+        min-width: 150px;
+    }
+
+    .search-container {
+        gap: 0.5rem; /* Espacio uniforme entre elementos */
+    }
+</style>
 
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-orange">
             <h5 class="card-title mb-0">Listado de Mascotas</h5>
         </div>
         <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-4">
-                    <label class="form-label"><strong>Buscar por:</strong></label>
-                    <div class="input-group">
+            <div class="row mb-3 justify-content-between">
+                <div class="col-md-9 d-flex align-items-end search-container">
+                    <!-- Grupo de búsqueda (izquierda) -->
+                    <div class="input-group" style="width: 180px;">
                         <select class="form-select" @bind="CriterioBusqueda">
                             <option value="Todos">Todos</option>
                             <option value="Id">ID</option>
                             <option value="Tipo">Tipo</option>
                             <option value="Raza">Raza</option>
                         </select>
-                        @if (CriterioBusqueda == "Id")
-                        {
-                            <input type="number" class="form-control" @bind="IdBusqueda" placeholder="ID de la mascota" />
-                        }
-                        else if (CriterioBusqueda == "Tipo")
-                        {
-                            <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Tipo de Mascota" />
-                        }
-                        else if (CriterioBusqueda == "Raza")
-                        {
-                            <input type="text" class="form-control" @bind="CategoriaBusqueda" placeholder="Raza de la Mascota" />
-                        }
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label"><strong>Filtrar por cantidad:</strong></label>
-                    <div class="input-group">
-                        <InputNumber class="form-control" @bind-Value="CantidadMinima" placeholder="Mínimo" />
-                        <span class="input-group-text">-</span>
-                        <InputNumber class="form-control" @bind-Value="CantidadMaxima" placeholder="Máximo" />
+
+                    <div class="input-group" style="width: 250px;">
+                        <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Ingrese su búsqueda..." />
                     </div>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-primary me-2" @onclick="BuscarMascotas">
+
+                    <button class="btn btn-orange btn-sm btn-custom" @onclick="BuscarMascotas">
                         <i class="bi bi-search"></i> Buscar
                     </button>
-                    <button class="btn btn-secondary" @onclick="LimpiarFiltros">
+
+                    <button class="btn btn-secondary btn-sm btn-custom" @onclick="LimpiarFiltros">
                         <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                    </button>
+                </div>
+
+                <div class="col-md-3 d-flex align-items-end justify-content-end">
+                    <!-- Botón de agregar (derecha) -->
+                    <button class="btn btn-orange btn-sm btn-custom" @onclick="NuevaMascota">
+                        <i class="bi bi-plus-circle"></i> Agregar Nueva Mascota
                     </button>
                 </div>
             </div>
@@ -64,7 +86,7 @@
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
                         <thead>
-                            <tr class="table-primary">
+                            <tr class="table-orange">
                                 <th>ID</th>
                                 <th>Tipo</th>
                                 <th>Raza</th>
@@ -110,26 +132,15 @@
                 </div>
             }
         </div>
-        <div class="card-footer text-center">
-            <button class="btn btn-success" @onclick="NuevaMascota">
-                <i class="bi bi-plus-circle"></i> Agregar Nueva Mascota
-            </button>
-            <a class="btn btn-secondary" href="/Mascota/Index">
-                <i class="bi bi-house-door"></i> Volver al índice
-            </a>
-        </div>
     </div>
 </div>
 
 @code {
-
     private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
     private string CriterioBusqueda = "Todos";
     private int IdBusqueda;
     private string TextoBusqueda = string.Empty;
     private string CategoriaBusqueda = string.Empty;
-    private int? CantidadMinima;
-    private int? CantidadMaxima;
 
     protected override async Task OnInitializedAsync()
     {
@@ -168,8 +179,6 @@
         IdBusqueda = 0;
         TextoBusqueda = string.Empty;
         CategoriaBusqueda = string.Empty;
-        CantidadMinima = null;
-        CantidadMaxima = null;
         await CargarMascotas();
     }
 
