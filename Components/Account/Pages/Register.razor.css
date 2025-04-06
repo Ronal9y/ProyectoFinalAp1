@@ -1,0 +1,137 @@
+﻿/* Contenedor principal */
+.register-container {
+    background: #FF8C00; /* Fondo naranja oscuro completo */
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Poppins', sans-serif; /* Fuente limpia y moderna */
+    padding: 0 20px; /* Espacio extra para pequeños márgenes */
+    box-sizing: border-box;
+}
+
+/* Caja de login */
+.register-box {
+    background-color: #ffffff; /* Fondo blanco para la caja */
+    width: 100%;
+    max-width: 400px;
+    padding: 50px 40px;
+    border-radius: 30px; /* Bordes más redondeados */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+    text-align: center;
+    transition: transform 0.3s ease-in-out;
+}
+
+    /* Animación al mostrar la caja de login */
+    .register-box:hover {
+        transform: scale(1.03); /* Efecto de elevar ligeramente */
+    }
+
+    /* Título dentro del login */
+    .register-box h2 {
+        color: #000000;
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 30px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        border-bottom: 2px solid #87CEFA; /* Línea inferior azul cielo claro */
+        padding-bottom: 5px;
+    }
+.h1 {
+    color: #000000;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding-bottom: 5px;
+}
+/* Icono de login centrado */
+.register-icon {
+    background-color: #4A667; /* Gris oscuro para el ícono */
+    color: white;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 25px; /* Espacio inferior más grande */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 36px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    border: 3px solid black;
+}
+
+/* Estilo de los campos del formulario */
+.form-group {
+    margin-bottom: 15px; /* Espacio mayor entre los campos */
+    text-align: left;
+}
+
+    .form-group label {
+        color: #4A667F; /* Gris oscuro para las etiquetas */
+        font-size: 16px;
+        font-weight: bold; /* Negrita */
+        margin-bottom: 10px; /* Espacio mayor para las etiquetas */
+        display: block;
+    }
+
+/* Estilos de los campos de entrada */
+.form-control {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 8px; /* Bordes más suaves */
+    border: 1px solid #DDDDDD;
+    background-color: #f8f8f8; /* Fondo más suave */
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05); /* Sombra interna */
+    transition: all 0.3s ease; /* Transición más suave al hacer focus */
+}
+
+    .form-control:focus {
+        border-color: #008DD9; /* Borde azul brillante al hacer focus */
+        outline: none; /* Eliminar el outline */
+        background-color: #fff; /* Fondo blanco cuando se enfoca */
+        box-shadow: 0 0 8px rgba(0, 141, 217, 0.5); /* Sombra más visible */
+    }
+
+/* Estilo del botón de inicio de sesión */
+.btn-submit {
+    background-color: #0000FF; /* Azul */
+    color: white;
+    padding: 15px 0;
+    font-size: 18px;
+    border-radius: 30px;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-submit:hover {
+        background-color: #1E90FF; /* Azul más claro al pasar el ratón */
+    }
+
+/* Estilos para los enlaces de abajo */
+.links p {
+    font-size: 14px;
+    margin-top: 20px;
+}
+
+.links a {
+    color: #008DD9;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+    .links a:hover {
+        color: #006994; /* Azul más oscuro */
+    }
+
+/* Posición más baja para evitar solapamiento */
+.checkbox-container {
+    margin-bottom: 25px; /* Espacio suficiente para evitar que se solape con el botón */
+}
