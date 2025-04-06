@@ -8,7 +8,6 @@ global using ProyectoFinalAp1.Data;
 global using ProyectoFinalAp1.Services;
 global using ProyectoFinalAp1.Models;
 global using Microsoft.EntityFrameworkCore.Design;
-using Blazored.Toast;
 
 namespace ProyectoFinalAp1
 {
@@ -21,9 +20,8 @@ namespace ProyectoFinalAp1
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
-
+            builder.Services.AddRazorPages();
             builder.Services.AddBlazorBootstrap();
-            builder.Services.AddBlazoredToast();
 
             var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
             builder.Services.AddDbContextFactory<ApplicationDbContext>(o => o.UseSqlServer(ConStr));
@@ -54,12 +52,17 @@ namespace ProyectoFinalAp1
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+            builder.Logging.AddDebug();
 
             var app = builder.Build();
 
@@ -76,8 +79,12 @@ namespace ProyectoFinalAp1
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
+            app.UseRouting();
             app.UseAntiforgery();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()

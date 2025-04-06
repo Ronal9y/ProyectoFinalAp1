@@ -7,37 +7,6 @@
 
 <PageTitle>Índice de Productos</PageTitle>
 
-<style>
-    .bg-orange {
-        background-color: #FF8000 !important;
-        color: white !important;
-    }
-
-    .btn-orange {
-        background-color: #FF8000 !important;
-        border-color: #FF8000 !important;
-        color: white !important;
-    }
-
-        .btn-orange:hover {
-            background-color: #e67300 !important;
-            border-color: #e67300 !important;
-        }
-
-    .table-orange th {
-        background-color: #FF8000 !important;
-        color: white !important;
-    }
-
-    .btn-custom {
-        min-width: 150px;
-    }
-
-    .search-container {
-        gap: 0.5rem;
-    }
-</style>
-
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header bg-orange">
@@ -56,23 +25,23 @@
                         </select>
                     </div>
 
-                    <div class="input-group" style="width: 250px;">
+                    <div class="input-group" style="width: 300px;">
                         <input type="text" class="form-control" @bind="TextoBusqueda" placeholder="Ingrese su búsqueda..." />
                     </div>
 
-                    <button class="btn btn-orange btn-sm btn-custom" @onclick="BuscarProductos">
+                    <button class="btn btn-orange btn-sm btn-custom1" @onclick="BuscarProductos">
                         <i class="bi bi-search"></i> Buscar
                     </button>
 
-                    <button class="btn btn-secondary btn-sm btn-custom" @onclick="LimpiarFiltros">
+                    <button class="btn btn-secondary btn-sm btn-custom1" @onclick="LimpiarFiltros">
                         <i class="bi bi-arrow-counterclockwise"></i> Limpiar
                     </button>
                 </div>
 
                 <div class="col-md-3 d-flex align-items-end justify-content-end">
                     <!-- Botón de agregar -->
-                    <button class="btn btn-orange btn-sm btn-custom" @onclick="NuevoProducto">
-                        <i class="bi bi-plus-circle"></i> Agregar Nuevo Producto
+                    <button class="btn btn-success btn-sm btn-custom" @onclick="NuevoProducto">
+                        <i class="bi bi-plus-circle"></i> Nuevo Producto
                     </button>
                 </div>
             </div>

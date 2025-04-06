@@ -10,67 +10,60 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Inicio de Sesi&oacute;n</PageTitle>
 
-<div class="d-flex justify-content-center align-items-center mt-5 mb-5">
-    <div class="col-lg-6">
-        <section class="card p-5 shadow-lg rounded-4 text-center">
-         
-            <div class="d-flex justify-content-center">
-                <img src="favicon.svg" alt="Logo" class="rounded-circle shadow-sm bg-light p-2"
-                     width="125" height="125" />
+<div class="login-container">
+    <div class="login-box">
+        <h2>Bienvenido a Kitter</h2>
+        <img src="/favicon.svg" alt="Icono Login" class="login-icon" />
+        
+        <StatusMessage Message="@errorMessage" />
+
+        <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+            <DataAnnotationsValidator />
+
+            @* @Correo Electrónico@ *@
+            <div class="form-group">
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="nombre_usuario@gmail.com" />
+                    <label for="email" class="form-label">Correo Electr&iacute;tenico</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                </div>
             </div>
 
-            <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator />
-                <h2 class="fs-4">Use a local account to log in.</h2>
-                <hr />
-                <ValidationSummary class="text-danger fs-5" role="alert" />
-
-                <!-- Email Input -->
-                <div class="mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email"
-                               class="form-control fs-5 rounded-pill border-0 shadow-sm bg-light p-3"
-                               autocomplete="username" aria-required="true" placeholder="Email" />
-                    <ValidationMessage For="() => Input.Email" class="text-danger fs-6 mt-1" />
+            @* Contraseña *@
+            <div class="form-group">
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Contraseña" />
+                    <label for="password" class="form-label">Contraseña</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
+            </div>
 
-                <!-- Password Input -->
-                <div class="mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password"
-                               class="form-control fs-5 rounded-pill border-0 shadow-sm bg-light p-3"
-                               autocomplete="current-password" aria-required="true" placeholder="Password" />
-                    <ValidationMessage For="() => Input.Password" class="text-danger fs-6 mt-1" />
-                </div>
-
-                <!-- Remember Me Checkbox -->
-                <div class="form-check mb-3">
-                    <label class="form-check-label fs-5">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input fs-5" />
-                        Remember me
+            @*Recordarme *@
+            <div class="checkbox-container">
+                <div class="checkbox mb-0">
+                    <label class="form-label">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
+                        Recordar
                     </label>
                 </div>
+            </div>
 
-                <!-- Submit Button -->
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary p-2 fs-5 rounded-pill shadow-sm">
-                        Log in
-                    </button>
-                </div>
+            @* Boton de entrar*@
+            <div>
+                <button type="submit" class="btn-submit">Entrar</button>
+            </div>
 
-                <!-- Links -->
-                <div class="text-center mt-3 fs-5">
-                    <p><a href="Account/ForgotPassword">Forgot your password?</a></p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
-                            Register as a new user
-                        </a>
-                    </p>
-                    <p><a href="Account/ResendEmailConfirmation">Resend email confirmation</a></p>
-                </div>
-            </EditForm>
-        </section>
+            @* Enlaces *@
+            <div class="links">
+         
+                <p>
+                    <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Registrarse como nuevo usuario</a>
+                </p>
+                
+            </div>
+        </EditForm>
     </div>
 </div>
 
@@ -102,7 +95,7 @@
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
-            Logger.LogInformation("User logged in.");
+            Logger.LogInformation("Usuario logeado.");
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
@@ -113,12 +106,12 @@
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("User account locked out.");
+            Logger.LogWarning("Cuenta de usuario bloqueada.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Error: Intento de inicio de sesión inválido.";
         }
     }
 
