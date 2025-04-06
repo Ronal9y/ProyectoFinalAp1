@@ -9,7 +9,24 @@ main {
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-image: linear-gradient(45deg,#FF4500,#FFA500);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+footer {
+    width: 100%;
+    max-width: 100vw;
+    background-color: #FF4500;
+    color: white;
+    text-align: center;
+    padding: 0.5rem 0;
+    border: 1px solid #FFA500;
 }
 
 .top-row {
