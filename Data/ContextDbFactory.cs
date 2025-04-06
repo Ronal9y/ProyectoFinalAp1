@@ -10,7 +10,7 @@ namespace RegistroTecnico.Context
         {
             // Configura el DbContext usando una cadena de conexión estática o predeterminada.
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
-            optionsBuilder.UseSqlServer("workstation id=RegistroDb.mssql.somee.com;packet size=4096;user id=ahb45_SQLLogin_1;pwd=59868mjt41;data source=RegistroDb.mssql.somee.com;persist security info=False;initial catalog=RegistroDb;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Server=tcp:aplicada-1.database.windows.net,1433;Initial Catalog=AdrianDb;Persist Security Info=False;User ID=Adrian;Password=Maximo00;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }
