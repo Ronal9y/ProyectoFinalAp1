@@ -164,7 +164,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder
-            .UseSqlServer("Server=tcp:aplicada-1.database.windows.net,1433;Initial Catalog=AdrianDb;Persist Security Info=False;User ID=Adrian;Password=Maximo00;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;") // Reemplaza con tu cadena de conexión
+            .UseSqlServer("workstation id=KitterDB123.mssql.somee.com;packet size=4096;user id=ahb45_SQLLogin_2;pwd=bovrurrxl4;data source=KitterDB123.mssql.somee.com;persist security info=False;initial catalog=KitterDB123;TrustServerCertificate=True") // Reemplaza con tu cadena de conexión
             .EnableSensitiveDataLogging(); // Habilitar el registro sensible de datos
     }
 

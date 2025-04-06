@@ -7,7 +7,7 @@
 <PageTitle>Registro de Empleados</PageTitle>
 
 <div class="card shadow-lg">
-    <div class="card-header bg-white text-center text-white py-3 rounded">
+    <div class="card-header bg-primary text-center text-white py-3 rounded">
         <h3 class="font-weight-bold text-black">Registro de Empleados</h3>
     </div>
 
@@ -73,8 +73,7 @@
                         <td>@empleado.Email</td>
                         <td>@empleado.Cargo</td>
                         <td>@empleado.FechaDeContratacion.ToString("dd-MM-yyyy")</td>
-                        <td>@string.Format("{0:N2}",empleado.Salario)</td>
-
+                        <td>@string.Format("{0:N2}", empleado.Salario)</td>
                         <td>
                             <a href="/Empleados/Edit/@empleado.EmpleadoId" class="btn btn-outline-success">
                                 <i class="bi bi-pencil-square fs-4"></i>
@@ -86,30 +85,31 @@
                             </a>
                         </td>
                     </tr>
-
                 }
-                <tr>
-                    <td colspan="5" class="text-end fw-bold">Total:</td>
-                    <td class="fw-bold">@TotalSalarios</td>
-                    <td colspan="2"></td>
-                </tr>
             }
             else
             {
                 <tr>
-                    <td colspan="8">No se encontraron resultados</td>
+                    <td colspan="9">No se encontraron resultados</td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <div class="card-footer d-flex justify-content-between">
-        <p>Conteo: @Listar.Count</p>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <div>
+            <span class="fw-bold">Conteo: @Listar.Count</span>
+        </div>
+        @if (Listar.Count > 0)
+        {
+            <div>
+                <span class="fw-bold">Total Salarios: @string.Format("{0:N2}", TotalSalarios)</span>
+            </div>
+        }
     </div>
 </div>
 
 @code {
-
     public List<Empleados> Listar { get; set; } = new List<Empleados>();
     public string filtro { get; set; } = "EmpleadoID";
     public string valorFiltro { get; set; } = string.Empty;
@@ -124,7 +124,6 @@
 
     public async Task Buscar()
     {
-
         var listaFiltrada = await empleadoService.Listar(p => true);
 
         if (Desde.HasValue && Hasta.HasValue)
@@ -158,11 +157,9 @@
         TotalSalarios = Listar.Sum(m => m.Salario);
     }
 
-
     private async Task CargarDatos()
     {
         Listar = await empleadoService.Listar(s => true);
         TotalSalarios = await empleadoService.ObtenerTotalSalarios();
     }
-
 }

@@ -4,81 +4,88 @@
 @inject CitasService citasService
 @inject EmpleadoService empleadoService
 @inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
 @rendermode InteractiveServer
 
 <PageTitle>Editar Cita</PageTitle>
 
-<EditForm Model="@Cita" OnValidSubmit="@OnValidSubmit">
+<EditForm Model="Cita" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
+    <ValidationSummary />
 
-    <div class="container">
-        <div class="card shadow-lg">
-            <div class="card-header text-center bg-primary text-white">
-                <h5 class="card-title">Editar Cita</h5>
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-center text-white py-2 rounded">
+            <h3 style="font-weight: bold;">Editar Cita para tu Mascota</h3>
+        </div>
+
+        <div class="card-body">
+            <!-- ID de Cita (solo lectura) -->
+            <div class="mb-3">
+                <label class="form-label">ID de Cita:</label>
+                <InputNumber @bind-Value="Cita.CitaId" class="form-control" disabled />
             </div>
 
-            <div class="card-body">
-                @if (!string.IsNullOrEmpty(ErrorMessage))
-                {
-                    <div class="alert alert-danger" role="alert">
-                        @ErrorMessage
-                    </div>
-                }
-
-                @* ID de Cita (solo lectura) *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>ID de Cita</strong></label>
-                    <InputNumber class="form-control" @bind-Value="@Cita.CitaId" disabled />
-                </div>
-
-                @* Nombre del Cliente *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre del Cliente</strong></label>
-                    <InputText class="form-control" @bind-Value="@Cita.Nombre" />
-                    <ValidationMessage For="@(() => Cita.Nombre)" />
-                </div>
-
-                @* Fecha de la Cita *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Fecha</strong></label>
-                    <InputDate class="form-control" @bind-Value="@Cita.Fecha" />
-                    <ValidationMessage For="@(() => Cita.Fecha)" />
-                </div>
-
-                @* Descripción *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Descripción</strong></label>
-                    <InputTextArea class="form-control" @bind-Value="@Cita.Descripcion" />
-                    <ValidationMessage For="@(() => Cita.Descripcion)" />
-                </div>
-
-                @* Nombre de la Mascota *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Nombre de la Mascota</strong></label>
-                    <InputText class="form-control" @bind-Value="@Cita.NombreMascota" />
-                    <ValidationMessage For="@(() => Cita.NombreMascota)" />
-                </div>
-
-                @* Empleado *@
-                <div class="mb-3">
-                    <label class="form-label"><strong>Empleado</strong></label>
-                    <select class="form-select" @bind="@Cita.EmpleadoId">
-                        <option value="">Seleccione un empleado</option>
-                        @foreach (var empleado in EmpleadosList)
-                        {
-                            <option value="@empleado.EmpleadoId">@empleado.Nombre</option>
-                        }
-                    </select>
-                    <ValidationMessage For="@(() => Cita.EmpleadoId)" />
-                </div>
+            <!-- Información del Cliente -->
+            <div class="mb-3">
+                <label class="form-label">Tu Nombre Completo <span class="text-danger">*</span>:</label>
+                <InputText @bind-Value="Cita.Nombre" class="form-control" />
+                <ValidationMessage For="@(() => Cita.Nombre)" />
             </div>
 
-            <div class="card-footer text-center mt-2">
-                <button type="button" class="btn btn-secondary" @onclick="Retroceder">
-                    <span class="bi bi-arrow-left"></span> Volver
+            <!-- Información de la Mascota -->
+            <div class="mb-3">
+                <label class="form-label">Nombre de tu Mascota <span class="text-danger">*</span>:</label>
+                <InputText @bind-Value="Cita.NombreMascota" class="form-control" />
+                <ValidationMessage For="@(() => Cita.NombreMascota)" />
+            </div>
+
+            <!-- Detalles de la Cita -->
+            <div class="mb-3">
+                <label class="form-label">Fecha de la Cita <span class="text-danger">*</span>:</label>
+                <InputDate @bind-Value="Cita.Fecha" min="@DateTime.Now.ToString("yyyy-MM-dd")" class="form-control" />
+                <small class="text-muted">No se permiten citas en fechas pasadas</small>
+                <ValidationMessage For="@(() => Cita.Fecha)" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Motivo de la Cita <span class="text-danger">*</span>:</label>
+                <InputTextArea @bind-Value="Cita.Descripcion" class="form-control" rows="3" />
+                <small class="text-muted">Describe los síntomas o razón de la visita</small>
+                <ValidationMessage For="@(() => Cita.Descripcion)" />
+            </div>
+
+            <!-- Selección de Empleado -->
+            <div class="mb-3">
+                <label class="form-label">Especialista <span class="text-danger">*</span>:</label>
+                <select @bind="Cita.EmpleadoId" class="form-select">
+                    <option value="">Seleccione un especialista</option>
+                    @foreach (var empleado in EmpleadosList)
+                    {
+                        <option value="@empleado.EmpleadoId">
+                            @empleado.Nombre - @empleado.Cargo
+                        </option>
+                    }
+                </select>
+                <ValidationMessage For="@(() => Cita.EmpleadoId)" />
+            </div>
+
+            <!-- Advertencias -->
+            <div class="alert alert-warning">
+                <h5><i class="bi bi-exclamation-triangle-fill"></i> Importante</h5>
+                <ul>
+                    <li>Todos los campos marcados con <span class="text-danger">*</span> son obligatorios</li>
+                    <li>Por favor llega 10 minutos antes de tu cita</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card-footer d-flex justify-content-lg-center text-center">
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary" @onclick="Retroceder">
+                    <span class="bi bi-arrow-left"></span> Cancelar
                 </button>
                 <button type="submit" class="btn btn-primary">
-                    <span class="bi bi-floppy"></span> Guardar
+                    <span class="bi bi-floppy"></span> Guardar Cambios
                 </button>
             </div>
         </div>
@@ -94,15 +101,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        EmpleadosList = await empleadoService.ListarEmpleado();
+        try
+        {
+            EmpleadosList = await empleadoService.ListarEmpleado();
 
-        if (CitaId > 0)
-        {
-            await BuscarCita();
+            if (CitaId > 0)
+            {
+                await BuscarCita();
+            }
+            else
+            {
+                ErrorMessage = "ID de cita no válido";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            ErrorMessage = "ID de cita no válido";
+            ErrorMessage = $"Error al cargar datos: {ex.Message}";
         }
     }
 
@@ -118,49 +132,68 @@
             else
             {
                 ErrorMessage = "No se encontró la cita especificada";
+                await jsRuntime.InvokeVoidAsync("alert", ErrorMessage);
+                navigationManager.NavigateTo("/Citas/Index");
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Error al buscar la cita: {ex.Message}";
+            await jsRuntime.InvokeVoidAsync("alert", ErrorMessage);
         }
     }
 
-    private async Task OnValidSubmit()
+    private async Task Guardar()
     {
         try
         {
-            // Validar fecha no sea en el pasado
-            if (Cita.Fecha < DateTime.Now.Date)
+            // Validaciones básicas
+            if (Cita.Fecha < DateTime.Today)
             {
-                ErrorMessage = "No se pueden agendar citas en fechas pasadas";
+                await jsRuntime.InvokeVoidAsync("alert", "No puedes agendar citas en fechas pasadas");
                 return;
             }
 
-            // Validar que se haya seleccionado un empleado
+            if (string.IsNullOrWhiteSpace(Cita.Nombre))
+            {
+                await jsRuntime.InvokeVoidAsync("alert", "Por favor ingresa tu nombre completo");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Cita.NombreMascota))
+            {
+                await jsRuntime.InvokeVoidAsync("alert", "Por favor ingresa el nombre de tu mascota");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(Cita.Descripcion))
+            {
+                await jsRuntime.InvokeVoidAsync("alert", "Por favor describe el motivo de la cita");
+                return;
+            }
+
             if (Cita.EmpleadoId <= 0)
             {
-                ErrorMessage = "Debe seleccionar un empleado";
+                await jsRuntime.InvokeVoidAsync("alert", "Por favor selecciona un especialista");
                 return;
             }
 
-            // Intenta guardar la cita
-            if (await citasService.Guardar(Cita))
+            // Guardar cambios
+            var resultado = await citasService.Guardar(Cita);
+            if (resultado)
             {
+                await jsRuntime.InvokeVoidAsync("alert", "¡Cita actualizada con éxito!");
                 navigationManager.NavigateTo("/Citas/Index");
             }
             else
             {
-                ErrorMessage = "No se pudo guardar la cita";
+                await jsRuntime.InvokeVoidAsync("alert", "No se pudo actualizar la cita");
             }
-        }
-        catch (InvalidOperationException ex)
-        {
-            ErrorMessage = ex.Message;
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Error inesperado: {ex.Message}";
+            ErrorMessage = $"Error al guardar: {ex.Message}";
+            await jsRuntime.InvokeVoidAsync("alert", ErrorMessage);
         }
     }
 

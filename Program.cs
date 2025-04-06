@@ -8,6 +8,8 @@ global using ProyectoFinalAp1.Data;
 global using ProyectoFinalAp1.Services;
 global using ProyectoFinalAp1.Models;
 global using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Antiforgery.Internal;
 
 namespace ProyectoFinalAp1
 {
@@ -23,6 +25,8 @@ namespace ProyectoFinalAp1
             builder.Services.AddRazorPages();
             builder.Services.AddBlazorBootstrap();
 
+
+      
             var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
             builder.Services.AddDbContextFactory<ApplicationDbContext>(o => o.UseSqlServer(ConStr));
 
@@ -52,7 +56,7 @@ namespace ProyectoFinalAp1
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()

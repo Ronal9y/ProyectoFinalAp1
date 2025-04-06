@@ -7,37 +7,6 @@
 
 <PageTitle>Índice de Mascotas</PageTitle>
 
-<style>
-    .bg-orange {
-        background-color: #FF8000 !important;
-        color: white !important;
-    }
-
-    .btn-orange {
-        background-color: #FF8000 !important;
-        border-color: #FF8000 !important;
-        color: white !important;
-    }
-
-        .btn-orange:hover {
-            background-color: #e67300 !important;
-            border-color: #e67300 !important;
-        }
-
-    .table-orange th {
-        background-color: #FF8000 !important;
-        color: white !important;
-    }
-
-    .btn-custom {
-        min-width: 150px;
-    }
-
-    .search-container {
-        gap: 0.5rem; /* Espacio uniforme entre elementos */
-    }
-</style>
-
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header bg-orange">
@@ -104,13 +73,13 @@
                                     <td>@mascota.MascotaId</td>
                                     <td>@mascota.Tipo</td>
                                     <td>@(mascota.Raza?.Length > 30 ? mascota.Raza.Substring(0, 30) + "..." : mascota.Raza)</td>
-                                    <td>@mascota.FechaDeNacimiento</td>
+                                    <td>@mascota.FechaDeNacimiento.ToShortDateString()</td>
                                     <td>@mascota.Precio.ToString("C")</td>
                                     <td>@mascota.Cantidad</td>
                                     <td>
                                         @if (!string.IsNullOrEmpty(mascota.ImageURL))
                                         {
-                                            <img src="@mascota.ImageURL" style="width: 50px; height: 50px;" class="img-thumbnail" />
+                                            <img src="@mascota.ImageURL" style="width: 50px; height: auto;" class="img-thumbnail" />
                                         }
                                         else
                                         {
@@ -138,47 +107,84 @@
 @code {
     private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
     private string CriterioBusqueda = "Todos";
-    private int IdBusqueda;
     private string TextoBusqueda = string.Empty;
-    private string CategoriaBusqueda = string.Empty;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarMascotas();
+        try
+        {
+            await CargarMascotas();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar mascotas: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task CargarMascotas()
     {
-        mascotas = await mascotasService.ListarMascotas();
+        try
+        {
+            var mascotasDb = await mascotasService.ListarMascotas();
+            mascotas = mascotasDb?.ToList() ?? new List<ProyectoFinalAp1.Models.Mascotas>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al obtener mascotas: {ex.Message}";
+            mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
+            Console.WriteLine(errorMessage);
+        }
     }
 
     private async Task BuscarMascotas()
     {
-        if (CriterioBusqueda == "Id" && IdBusqueda > 0)
+        try
         {
-            var mascota = await mascotasService.Buscar(IdBusqueda);
-            mascotas = mascota != null ? new List<ProyectoFinalAp1.Models.Mascotas> { mascota } : new();
+            var query = await mascotasService.ListarMascotas();
+
+            if (!string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                if (CriterioBusqueda == "Id" && int.TryParse(TextoBusqueda, out int id))
+                {
+                    query = query.Where(m => m.MascotaId == id).ToList();
+                }
+                else if (CriterioBusqueda == "Tipo")
+                {
+                    query = query.Where(m => m.Tipo.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+                else if (CriterioBusqueda == "Raza")
+                {
+                    query = query.Where(m => m.Raza.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+                else
+                {
+                    query = query.Where(m =>
+                        m.Tipo.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                        m.Raza.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                        m.MascotaId.ToString().Contains(TextoBusqueda)).ToList();
+                }
+            }
+
+            mascotas = query;
         }
-        else if (CriterioBusqueda == "Tipo")
+        catch (Exception ex)
         {
-            mascotas = await mascotasService.ListarMascotas(p => p.Tipo.Contains(TextoBusqueda));
-        }
-        else if (CriterioBusqueda == "Raza")
-        {
-            mascotas = await mascotasService.ListarMascotas(p => p.Raza.Contains(CategoriaBusqueda));
-        }
-        else
-        {
-            mascotas = await mascotasService.ListarMascotas();
+            errorMessage = $"Error al buscar mascotas: {ex.Message}";
+            await JSRuntime.InvokeVoidAsync("alert", errorMessage);
         }
     }
 
     private async Task LimpiarFiltros()
     {
-        CriterioBusqueda = "Todos";
-        IdBusqueda = 0;
         TextoBusqueda = string.Empty;
-        CategoriaBusqueda = string.Empty;
+        CriterioBusqueda = "Todos";
         await CargarMascotas();
     }
 
@@ -197,8 +203,15 @@
         bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar esta mascota?");
         if (confirmado)
         {
-            await mascotasService.Eliminar(id);
-            await CargarMascotas();
+            try
+            {
+                await mascotasService.Eliminar(id);
+                await CargarMascotas();
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Error al eliminar: {ex.Message}");
+            }
         }
     }
 }

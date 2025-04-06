@@ -1,5 +1,4 @@
 ﻿@implements IDisposable
-
 @inject NavigationManager NavigationManager
 
 <div class="top-row ps-3 navbar navbar-dark">
@@ -12,73 +11,90 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
+        <!-- Inicio - Visible para todos -->
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="/Producto/Index">
-                <span class="bi bi-cart4 me-3 fs-5 mb-3" aria-hidden="true"></span> Productos
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <!-- Sección para usuarios autenticados (no necesariamente Admin) -->
+            <Authorized>
+                <!-- Productos - Solo usuarios registrados -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="/Producto/Index">
+                        <span class="bi bi-cart4 me-3 fs-5 mb-3" aria-hidden="true"></span> Productos
+                    </NavLink>
+                </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="Producto/IndexAdmin">
-                <span class="bi bi-cart4 me-3 fs-5 mb-3" aria-hidden="true"></span> Productos-Admin
-            </NavLink>
-        </div>
+                <!-- Mascotas - Solo usuarios registrados -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="/Mascota/Index">
+                        <span class="bi bi-heart-fill me-3 fs-5 mb-3" aria-hidden="true"></span> Mascotas
+                    </NavLink>
+                </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="/Mascota/Index">
-                <span class="bi bi-heart-fill me-3 fs-5 mb-3" aria-hidden="true"></span> Mascotas
-            </NavLink>
-        </div>
+                <!-- Citas - Solo usuarios registrados -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="/Citas/Index">
+                        <span class="bi bi-calendar-check-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Citas
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="/Mascota/IndexAdmin">
-                <span class="bi bi-heart-fill me-3 fs-5 mb-3" aria-hidden="true"></span> Mascotas-Admin
-            </NavLink>
-        </div>
+        <!-- Sección solo para Admin -->
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <!-- Productos-Admin -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="Producto/IndexAdmin">
+                        <span class="bi bi-cart4 me-3 fs-5 mb-3" aria-hidden="true"></span> Productos-Admin
+                    </NavLink>
+                </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="/Citas/Index">
-                <span class="bi bi-calendar-check-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Citas
-            </NavLink>
-        </div>
+                <!-- Mascotas-Admin -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="/Mascota/IndexAdmin">
+                        <span class="bi bi-heart-fill me-3 fs-5 mb-3" aria-hidden="true"></span> Mascotas-Admin
+                    </NavLink>
+                </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="/Empleados/Index">
-                <span class="bi bi-briefcase-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Empleados
-            </NavLink>
-        </div>
-        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="/Proveedores">
-                <span class="bi bi-bookmark-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Proveedores
-            </NavLink>
-        </div>
-        
-        <div class="nav-item px-3">
-            <NavLink class="nav-link d-flex align-items-center" href="/Donadores">
-                <span class="bi bi-chat-left-heart-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Donadores
-            </NavLink>
-        </div>
+                <!-- Empleados -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="/Empleados/Index">
+                        <span class="bi bi-briefcase-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Empleados
+                    </NavLink>
+                </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
+                <!-- Proveedores -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="/Proveedores">
+                        <span class="bi bi-bookmark-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Proveedores
+                    </NavLink>
+                </div>
 
+                <!-- Donadores -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center" href="/Donadores">
+                        <span class="bi bi-chat-left-heart-fill me-3 fs-5 mb-4" aria-hidden="true"></span> Donadores
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <!-- Gestión de cuenta -->
         <AuthorizeView>
             <Authorized>
+                <!-- Perfil de usuario -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
                     </NavLink>
                 </div>
+
+                <!-- Logout -->
                 <div class="nav-item px-3">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />
@@ -90,11 +106,14 @@
                 </div>
             </Authorized>
             <NotAuthorized>
+                <!-- Register - Visible para no autenticados -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Register">
                         <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
                     </NavLink>
                 </div>
+
+                <!-- Login - Visible para no autenticados -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
                         <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
@@ -125,4 +144,3 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-
