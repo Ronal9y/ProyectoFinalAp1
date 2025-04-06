@@ -14,72 +14,64 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
-@page "/register"
 
-@page "/register"
-@page "/register"
+<PageTitle>Registro</PageTitle>
 
-<PageTitle>Register</PageTitle>
-
-
-
-
-<div class="d-flex justify-content-center align-items-center mt-5 mb-5">
-    <div class="col-lg-6">
-        <section class="card p-5 shadow-lg rounded-4 text-center">
-
-            <div class="d-flex justify-content-center">
-                <img src="/favicon.svg" alt="Logo" class="rounded-circle shadow-sm bg-light p-2" width="125" height="125" />
-            </div>
+<div class="register-container">
+    <div class="register-box">
+       
+        <h2>Únete a Kitter</h2>
+        <img src="/favicon.svg" alt="Icono Login" class="register-icon" />
 
             <StatusMessage Message="@Message" />
             <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
                 <DataAnnotationsValidator />
-                <h2 class="fs-4">Create a new account.</h2>
-                <hr />
+                <h1 class="fs-4">Crea una nueva Cuenta.</h1>
+                
                 <ValidationSummary class="text-danger fs-5" role="alert" />
 
-                <!-- Email Input -->
-                <div class="mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email"
-                               class="form-control fs-5 rounded-pill border-0 shadow-sm bg-light p-3"
-                               autocomplete="username" aria-required="true" placeholder="Email" />
-                    <ValidationMessage For="() => Input.Email" class="text-danger fs-6 mt-1" />
+                @* Correo Electrónico *@
+                <div class="form-group">
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="nombre@ejemplo.com" />
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    </div>
                 </div>
 
-                <!-- Password Input -->
-                <div class="mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password"
-                               class="form-control fs-5 rounded-pill border-0 shadow-sm bg-light p-3"
-                               autocomplete="new-password" aria-required="true" placeholder="Password" />
-                    <ValidationMessage For="() => Input.Password" class="text-danger fs-6 mt-1" />
+                @* Contraseña *@
+                <div class="form-group">
+                    <div class="form-floating mb-3">
+                        <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Contraseña" />
+                        <label for="password" class="form-label">Contraseña</label>
+                        <ValidationMessage For="() => Input.Password" class="text-danger" />
+                    </div>
                 </div>
 
-                <!-- Confirm Password Input -->
-                <div class="mb-3">
-                    <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword"
-                               class="form-control fs-5 rounded-pill border-0 shadow-sm bg-light p-3"
-                               autocomplete="new-password" aria-required="true" placeholder="Confirm Password" />
-                    <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger fs-6 mt-1" />
+                @* Confirmar Contraseña *@
+                <div class="form-group">
+                    <div class="form-floating mb-3">
+                        <InputText type="password" @bind-Value="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Confirmar Contraseña" />
+                        <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                        <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
+                    </div>
                 </div>
 
-                <!-- Submit Button -->
+                @* Botón de Registro *@
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary p-2 fs-5 rounded-pill shadow-sm">
-                        Register
-                    </button>
+                    <button type="submit" class="btn-submit">Registrarse</button>
                 </div>
 
-                <!-- Links -->
-                <div class="text-center mt-3 fs-5">
+                @* enlaces *@
+                <div class="links">
                     <p>
+                        ¿Ya tienes una cuenta?
                         <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">
-                            Already have an account? Log in
+                            Inicia Sesión
                         </a>
                     </p>
                 </div>
             </EditForm>
-        </section>
     </div>
 </div>
 
