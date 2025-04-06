@@ -1,4 +1,43 @@
-﻿/* Tabla de productos */
+﻿
+.bg-orange {
+    background-color: #FF8000 !important;
+    color: white !important;
+}
+
+.btn-orange {
+    background-color: #1E90FF !important;
+    border-color: #00CED1 !important;
+    color: white !important;
+}
+
+    .btn-orange:hover {
+        background-color: #00BFFF !important;
+        border-color: #00CED1 !important;
+    }
+
+.table-orange th {
+    background-color: #FF8000 !important;
+    color: white !important;
+}
+
+.btn-custom {
+    text-align: center;
+    width: 160px;
+    height: 35px;
+}
+
+.btn-custom1 {
+    width: 100px;
+    height: 35px;
+}
+
+.search-container {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Tabla de productos */
+
 .admin-table {
     width: 100%;
     border-collapse: collapse;
