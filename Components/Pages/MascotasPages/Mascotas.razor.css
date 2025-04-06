@@ -1,0 +1,110 @@
+﻿
+.bg-orange {
+    background-color: #FF8000 !important;
+    color: white !important;
+}
+
+.btn-orange {
+    background-color: #1E90FF !important;
+    border-color: #00CED1 !important;
+    color: white !important;
+}
+
+    .btn-orange:hover {
+        background-color: #00BFFF !important;
+        border-color: #00CED1 !important;
+    }
+
+.table-orange th {
+    background-color: #FF8000 !important;
+    color: white !important;
+}
+
+.btn-custom {
+    text-align: center;
+    width: 160px;
+    height: 35px;
+}
+
+.btn-custom1 {
+    width: 100px;
+    height: 35px;
+}
+
+.search-container {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Tabla de productos */
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 1rem;
+}
+
+    .admin-table th,
+    .admin-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .admin-table th {
+        background-color: #ff6b00; /* Naranja vibrante */
+        color: white;
+        font-weight: bold;
+    }
+
+    /* Filas alternas */
+    .admin-table tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .admin-table tbody tr:hover {
+        background-color: rgba(255, 107, 0, 0.2);
+        transition: background-color 0.3s ease-in-out;
+    }
+
+/* Miniaturas de imagen */
+.product-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+    transition: transform 0.3s ease-in-out;
+}
+
+    .product-thumbnail:hover {
+        transform: scale(1.2);
+    }
+
+/* Placeholder de imagen */
+.icon-placeholder {
+    font-size: 2rem;
+    color: #ccc;
+}
+
+/* Botones de acción */
+.action-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+    .action-btn.edit {
+        color: #ff6b00;
+    }
+
+    .action-btn.delete {
+        color: #ff2b2b;
+    }
+
+    .action-btn:hover {
+        transform: scale(1.2);
+    }
