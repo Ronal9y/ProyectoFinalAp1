@@ -178,7 +178,7 @@
             if (await productoService.Guardar(producto))
             {
                 await JSRuntime.InvokeVoidAsync("alert", "Producto guardado correctamente");
-                navigationManager.NavigateTo("/Producto/Index");
+                navigationManager.NavigateTo("/Producto/IndexAdmin");
             }
         }
         catch (InvalidOperationException ex)
@@ -193,6 +193,6 @@
 
     private void VolverAlIndice()
     {
-        navigationManager.NavigateTo("/Producto/Index");
+        navigationManager.NavigateTo("/Producto/IndexAdmin");
     }
 }

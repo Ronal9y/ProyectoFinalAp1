@@ -21,12 +21,6 @@
                         @totalMascotas
                     </span>
                 }
-                else
-                {
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                        0
-                    </span>
-                }
             </a>
         </div>
     </div>
@@ -55,7 +49,6 @@
                 </button>
             </div>
         </div>
-
     </div>
 
     <div class="row p-3">
@@ -73,7 +66,7 @@
                     <div class="card h-100">
                         @if (!string.IsNullOrEmpty(mascota.ImageURL))
                         {
-                            <div class="text-center mb-3" style="height: 200px; overflow: hidden;">
+                            <div class="text-center mb-3" style="height: 280px; overflow: hidden;">
                                 <img src="@mascota.ImageURL"
                                      class="img-fluid rounded"
                                      style="width: 100%; height: 100%; object-fit: cover;"
@@ -115,7 +108,6 @@
                                 <button class="btn btn-primary" @onclick="() => AgregarAlCarrito(mascota)">
                                     <i class="bi bi-cart-plus"></i> Agregar al Carrito
                                 </button>
-
                             </div>
                         </div>
                     </div>
@@ -127,51 +119,87 @@
 
 @code {
     private List<ProyectoFinalAp1.Models.Mascotas> mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
-    //private List<MascotaConCantidad> Cantimascotas = new List<MascotaConCantidad>();
     private string CriterioBusqueda = "Todos";
-    private int IdBusqueda;
     private string TextoBusqueda = string.Empty;
-    private string RazaBusqueda = string.Empty;
     private int totalMascotas = 0;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarMascotas();
-        totalMascotas = await carritoMascotasService.ObtenerTotalMascotasEnCarritoAsync();
+        try
+        {
+            await CargarMascotas();
+            totalMascotas = await carritoMascotasService.ObtenerTotalMascotasEnCarritoAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al cargar mascotas: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task CargarMascotas()
     {
-        var mascotasDb = await mascotasService.ListarMascotas();
+        try
+        {
+            var mascotasDb = await mascotasService.ListarMascotas();
+            mascotas = mascotasDb?.ToList() ?? new List<ProyectoFinalAp1.Models.Mascotas>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error al obtener mascotas: {ex.Message}";
+            mascotas = new List<ProyectoFinalAp1.Models.Mascotas>();
+            Console.WriteLine(errorMessage);
+        }
     }
 
     private async Task BuscarMascotas()
     {
-        if (CriterioBusqueda == "Id" && int.TryParse(TextoBusqueda, out int id))
+        try
         {
-            var mascota = await mascotasService.Buscar(id);
-            mascotas = mascota != null ? new List<ProyectoFinalAp1.Models.Mascotas> { mascota } : new();
+            var query = await mascotasService.ListarMascotas();
+
+            if (!string.IsNullOrWhiteSpace(TextoBusqueda))
+            {
+                if (CriterioBusqueda == "Id" && int.TryParse(TextoBusqueda, out int id))
+                {
+                    query = query.Where(m => m.MascotaId == id).ToList();
+                }
+                else if (CriterioBusqueda == "Tipo")
+                {
+                    query = query.Where(m => m.Tipo.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+                else if (CriterioBusqueda == "Raza")
+                {
+                    query = query.Where(m => m.Raza.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+                else
+                {
+                    query = query.Where(m =>
+                        m.Tipo.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                        m.Raza.Contains(TextoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                        m.MascotaId.ToString().Contains(TextoBusqueda)).ToList();
+                }
+            }
+
+            mascotas = query;
         }
-        else if (CriterioBusqueda == "Tipo")
+        catch (Exception ex)
         {
-            mascotas = await mascotasService.ListarMascotas(p => p.Tipo.Contains(TextoBusqueda));
-        }
-        else if (CriterioBusqueda == "Raza")
-        {
-            mascotas = await mascotasService.ListarMascotas(p => p.Raza.Contains(TextoBusqueda));
-        }
-        else
-        {
-            await CargarMascotas();
+            errorMessage = $"Error al buscar mascotas: {ex.Message}";
+            await JSRuntime.InvokeVoidAsync("alert", errorMessage);
         }
     }
 
     private async Task LimpiarFiltros()
     {
-        CriterioBusqueda = "Todos";
-        IdBusqueda = 0;
         TextoBusqueda = string.Empty;
-        RazaBusqueda = string.Empty;
+        CriterioBusqueda = "Todos";
         await CargarMascotas();
     }
 
@@ -179,18 +207,6 @@
     {
         var nuevaCantidad = mascota.CantidadSeleccionada + cambio;
         mascota.CantidadSeleccionada = Math.Clamp(nuevaCantidad, 1, mascota.Cantidad);
-    }
-
-    private void ValidarCantidad(ProyectoFinalAp1.Models.Mascotas mascota)
-    {
-        if (mascota.CantidadSeleccionada < 1)
-        {
-            mascota.CantidadSeleccionada = 1;
-        }
-        else if (mascota.CantidadSeleccionada > mascota.Cantidad)
-        {
-            mascota.CantidadSeleccionada = mascota.Cantidad;
-        }
     }
 
     private async Task AgregarAlCarrito(ProyectoFinalAp1.Models.Mascotas mascota)
@@ -216,44 +232,4 @@
             await JSRuntime.InvokeVoidAsync("alert", $"Error: {ex.Message}");
         }
     }
-
-    private void NuevaMascota()
-    {
-        navigationManager.NavigateTo("/Mascota/ComprarMascota");
-    }
-
-    private void EditarMascota(int id)
-    {
-        navigationManager.NavigateTo($"/Mascota/EditarMascota/{id}");
-    }
-
-    private async Task ConfirmarEliminar(int id)
-    {
-        bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar esta mascota?");
-        if (confirmado)
-        {
-            await mascotasService.Eliminar(id);
-            await CargarMascotas();
-        }
-    }
-
-    // private class MascotaConCantidad : Mascotas
-    // {
-    //     public MascotaConCantidad() { }
-
-    //     public MascotaConCantidad(ProyectoFinalAp1.Models.Mascotas mascota)
-    //     {
-    //         MascotaId = mascota.MascotaId;
-    //         Tipo = mascota.Tipo;
-    //         Raza = mascota.Raza;
-    //         FechaDeNacimiento = mascota.FechaDeNacimiento;
-    //         Precio = mascota.Precio;
-    //         Cantidad = mascota.Cantidad;
-    //         ImageURL = mascota.ImageURL;
-    //         Donador = mascota.Donador;
-    //         CantidadSeleccionada = 1;
-    //     }
-
-    //     public int CantidadSeleccionada { get; set; } = 1;
-    // }
 }

@@ -146,7 +146,7 @@
             if (await mascotasService.Guardar(mascotas))
             {
                 await JSRuntime.InvokeVoidAsync("alert", "Producto guardado correctamente");
-                navigationManager.NavigateTo("/Mascota/Index");
+                navigationManager.NavigateTo("/Mascota/IndexAdmin");
             }
         }
         catch (InvalidOperationException ex)
@@ -161,6 +161,6 @@
 
     private void VolverAlIndice()
     {
-        navigationManager.NavigateTo("/Mascota/Index");
+        navigationManager.NavigateTo("/Mascota/IndexAdmin");
     }
 }
