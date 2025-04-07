@@ -55,6 +55,12 @@ Lenguajes y framework Utilizados:
 ![image](https://github.com/user-attachments/assets/aa5c1116-0cec-41f9-a638-3b8b03e35ad3)
 
 
+Ejemplos visuales:
+
+![image](https://github.com/user-attachments/assets/a200e997-2237-4b5a-af5e-fd80973f197f)
+
+![image](https://github.com/user-attachments/assets/3b7183fa-3a26-49d2-b698-fda1d2ceffc4)
+
 
 Link de Somme:
 http://www.kitter.somee.com/Account/Login
