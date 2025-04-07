@@ -21,6 +21,12 @@ Email: Admin@gmail.com
 
 PassWord: @Admin123
 
+Usuario normal:
+
+Email: User@gmail.com
+
+PassWord: @User123
+
 Productos: Kitter ofrece una amplia gama de productos para mascotas, que incluyen:
 Juguetes: Diversos tipos de juguetes para mantener a las mascotas entretenidas.
 Alimentos: Variedad de alimentos para diferentes especies y edades.
