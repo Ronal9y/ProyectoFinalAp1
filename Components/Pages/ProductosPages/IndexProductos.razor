@@ -116,6 +116,13 @@
     </div>
 </div>
 
+@if (mostrarAlerta)
+{
+    <div class="alert alert-success position-fixed top-0 end-0 m-3 shadow" role="alert" style="z-index: 1050; transition: opacity 0.5s ease-in-out; opacity: 1;">
+        @mensajeAlerta
+    </div>
+}
+
 @code {
     private List<ProyectoFinalAp1.Models.Productos> productos = new List<ProyectoFinalAp1.Models.Productos>();
     private string CriterioBusqueda = "Todos";
@@ -123,6 +130,8 @@
     private int totalProductos = 0;
     private bool isLoading = true;
     private string errorMessage = string.Empty;
+    private string mensajeAlerta = string.Empty;
+    private bool mostrarAlerta = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -140,6 +149,18 @@
         {
             isLoading = false;
         }
+    }
+
+    private async Task MostrarAlertaTemporal(string mensaje, int duracion = 2000)
+    {
+        mensajeAlerta = mensaje;
+        mostrarAlerta = true;
+        StateHasChanged();
+
+        await Task.Delay(duracion);
+
+        mostrarAlerta = false;
+        StateHasChanged();
     }
 
     private async Task CargarProductos()
@@ -225,7 +246,7 @@
         {
             await productoservice.AgregarAlCarrito(producto.ProductoId, producto.CantidadSeleccionada);
             totalProductos = await productoservice.ObtenerTotalProductosEnCarrito();
-            await JSRuntime.InvokeVoidAsync("alert", "Producto agregado al carrito");
+            await MostrarAlertaTemporal("Producto agregado al carrito", 2000);
         }
         catch (Exception ex)
         {
