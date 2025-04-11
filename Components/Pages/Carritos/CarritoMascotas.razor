@@ -63,8 +63,27 @@ else
     </div>
 }
 
+@if (mostrarAlerta)
+{
+    <div class="alert alert-danger position-fixed top-0 end-0 m-3 shadow" role="alert" style="z-index: 1050; transition: opacity 0.5s ease-in-out; opacity: 1;">
+        @mensajeAlerta
+    </div>
+}
+
+@if (mostrarAlerta2)
+{
+    <div class="alert alert-success position-fixed top-0 end-0 m-3 shadow" role="alert" style="z-index: 1050; transition: opacity 0.5s ease-in-out; opacity: 1;">
+        @mensajeAlerta2
+    </div>
+}
+
 @code {
     private List<ProyectoFinalAp1.Models.CarritoMascotas> carritoItems = new List<ProyectoFinalAp1.Models.CarritoMascotas>();
+    private string mensajeAlerta = string.Empty;
+    private string mensajeAlerta2 = string.Empty;
+    private bool mostrarAlerta = false;
+    private bool mostrarAlerta2 = false;
+
     protected override async Task OnInitializedAsync()
     {
         await CargarCarrito();
@@ -73,6 +92,30 @@ else
     private async Task CargarCarrito()
     {
         carritoItems = await carritoMascotasService.ObtenerCarritoMascotasAsync();
+        StateHasChanged();
+    }
+
+    private async Task MostrarAlertaTemporal(string mensaje, int duracion = 2000)
+    {
+        mensajeAlerta = mensaje;
+        mostrarAlerta = true;
+        StateHasChanged();
+
+        await Task.Delay(duracion);
+
+        mostrarAlerta = false;
+        StateHasChanged();
+    }
+
+    private async Task MostrarAlertaTemporal2(string mensaje, int duracion = 2000)
+    {
+        mensajeAlerta2 = mensaje;
+        mostrarAlerta2 = true;
+        StateHasChanged();
+
+        await Task.Delay(duracion);
+
+        mostrarAlerta2 = false;
         StateHasChanged();
     }
 
@@ -91,7 +134,7 @@ else
             {
                 carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoId);
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Mascota eliminada del carrito");
+                await MostrarAlertaTemporal("Mascota eliminada del carrito", 2000);
             }
             else
             {
@@ -119,12 +162,12 @@ else
             {
                 carritoItems.RemoveAll(x => x.CarritoMascotaId == carritoMascotaId);
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Producto comprado con éxito");
+                await MostrarAlertaTemporal2("Mascota comprada con éxito", 2000);
             }
             else
             {
                 await JSRuntime.InvokeVoidAsync("alert",
-                    "No se pudo comprar el producto. Verifique el stock disponible.");
+                    "No se pudo comprar la mascota. Verifique el stock disponible.");
             }
         }
         catch (Exception ex)
@@ -138,7 +181,7 @@ else
         try
         {
             bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm",
-                "¿Está seguro que desea comprar todos los productos del carrito?");
+                "¿Está seguro que desea comprar todas las mascotas del carrito?");
 
             if (!confirmado) return;
 
@@ -148,12 +191,12 @@ else
             {
                 carritoItems.Clear();
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
+                await MostrarAlertaTemporal2("Compra realizada con éxito", 2000);
             }
             else
             {
                 await JSRuntime.InvokeVoidAsync("alert",
-                    "No se pudieron comprar todos los productos. Verifique los stocks disponibles.");
+                    "No se pudieron comprar todas las mascotas. Verifique los stocks disponibles.");
                 await CargarCarrito();
             }
         }

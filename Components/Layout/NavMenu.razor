@@ -1,8 +1,11 @@
 ﻿@implements IDisposable
 @inject NavigationManager NavigationManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IJSRuntime JSRuntime
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
+        <img src="LogoFavi.png" alt="Logo"/>
         <a class="navbar-brand" href="">Kitter</a>
     </div>
 </div>
@@ -19,22 +22,32 @@
         </div>
 
         <AuthorizeView>
+            <!-- Sección para usuarios autenticados que NO son Admin -->
+            <Authorized Context="auth">
+                @if (!auth.User.IsInRole("Admin"))
+                {
+                    <!-- Productos - Solo usuarios normales -->
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link d-flex align-items-center" href="/Producto/Index">
+                            <span class="bi bi-cart4 me-3 fs-5 mb-3"></span> Productos
+                        </NavLink>
+                    </div>
+
+                    <!-- Mascotas - Solo usuarios normales -->
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link d-flex align-items-center" href="/Mascota/Index">
+                            <span class="bi bi-heart-fill me-3 fs-5 mb-3"></span> Mascotas
+                        </NavLink>
+                    </div>
+
+                }
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView>
             <!-- Sección para usuarios autenticados (no necesariamente Admin) -->
             <Authorized>
-                <!-- Productos - Solo usuarios registrados -->
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link d-flex align-items-center" href="/Producto/Index">
-                        <span class="bi bi-cart4 me-3 fs-5 mb-3" aria-hidden="true"></span> Productos
-                    </NavLink>
-                </div>
-
-                <!-- Mascotas - Solo usuarios registrados -->
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link d-flex align-items-center" href="/Mascota/Index">
-                        <span class="bi bi-heart-fill me-3 fs-5 mb-3" aria-hidden="true"></span> Mascotas
-                    </NavLink>
-                </div>
-
+               
                 <!-- Citas - Solo usuarios registrados -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link d-flex align-items-center" href="/Citas/Index">
@@ -50,14 +63,14 @@
                 <!-- Productos-Admin -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link d-flex align-items-center" href="Producto/IndexAdmin">
-                        <span class="bi bi-cart4 me-3 fs-5 mb-3" aria-hidden="true"></span> Productos-Admin
+                        <span class="bi bi-cart4 me-3 fs-5 mb-3" aria-hidden="true"></span> Productos
                     </NavLink>
                 </div>
 
                 <!-- Mascotas-Admin -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link d-flex align-items-center" href="/Mascota/IndexAdmin">
-                        <span class="bi bi-heart-fill me-3 fs-5 mb-3" aria-hidden="true"></span> Mascotas-Admin
+                        <span class="bi bi-heart-fill me-3 fs-5 mb-3" aria-hidden="true"></span> Mascotas
                     </NavLink>
                 </div>
 
@@ -96,13 +109,9 @@
 
                 <!-- Logout -->
                 <div class="nav-item px-3">
-                    <form action="Account/Logout" method="post">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                        <button type="submit" class="nav-link">
-                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                        </button>
-                    </form>
+                    <button class="nav-link" @onclick="Logout">
+                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                    </button>
                 </div>
             </Authorized>
             <NotAuthorized>
@@ -119,6 +128,8 @@
                         <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
                     </NavLink>
                 </div>
+
+                
             </NotAuthorized>
         </AuthorizeView>
     </nav>
@@ -142,5 +153,15 @@
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+    private async Task Logout()
+    {
+        NavigationManager.NavigateTo("/Account/Logout", forceLoad: true);
+    }
+
+    private async Task CerrarSidebar()
+    {
+        await JSRuntime.InvokeVoidAsync("eval",
+            "document.querySelector('.navbar-toggler').click();");
     }
 }
