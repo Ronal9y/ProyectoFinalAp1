@@ -4,12 +4,26 @@
 @inject CarritoService CarritoService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h2>Carrito de Compras</h2>
 
-@if (carritoItems == null)
+
+@if (authState == null)
 {
-    <p>Cargando...</p>
+    <p>Cargando estado de autenticación...</p>
+}
+else if (!authState.User.Identity.IsAuthenticated)
+{
+    <div class="alert alert-warning">
+        <p>Debe iniciar sesión para acceder al carrito de compras.</p>
+        <a href="/Account/Login?returnUrl=/Carrito" class="btn btn-primary">Iniciar Sesión</a>
+        <a href="/Account/Register" class="btn btn-secondary">Registrarse</a>
+    </div>
+}
+else if (carritoItems == null)
+{
+    <p>Cargando carrito...</p>
 }
 else if (!carritoItems.Any())
 {
@@ -63,16 +77,67 @@ else
     </div>
 }
 
+@if (mostrarAlerta)
+{
+    <div class="alert alert-danger position-fixed top-0 end-0 m-3 shadow" role="alert" style="z-index: 1050; transition: opacity 0.5s ease-in-out; opacity: 1;">
+        @mensajeAlerta
+    </div>
+}
+
+@if (mostrarAlerta2)
+{
+    <div class="alert alert-success position-fixed top-0 end-0 m-3 shadow" role="alert" style="z-index: 1050; transition: opacity 0.5s ease-in-out; opacity: 1;">
+        @mensajeAlerta2
+    </div>
+}
+
 @code {
     private List<ProyectoFinalAp1.Models.Carrito> carritoItems = new List<ProyectoFinalAp1.Models.Carrito>();
+    private string mensajeAlerta = string.Empty;
+    private string mensajeAlerta2 = string.Empty;
+    private bool mostrarAlerta = false;
+    private bool mostrarAlerta2 = false;
+    private AuthenticationState authState;
+
     protected override async Task OnInitializedAsync()
     {
-        await CargarCarrito();
+        authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        if (authState.User.Identity.IsAuthenticated)
+        {
+            await CargarCarrito();
+        }
+
+        StateHasChanged();
     }
 
     private async Task CargarCarrito()
     {
         carritoItems = await CarritoService.ObtenerCarritoAsync();
+        StateHasChanged();
+    }
+
+    private async Task MostrarAlertaTemporal(string mensaje, int duracion = 2000)
+    {
+        mensajeAlerta = mensaje;
+        mostrarAlerta = true;
+        StateHasChanged();
+
+        await Task.Delay(duracion);
+
+        mostrarAlerta = false;
+        StateHasChanged();
+    }
+    
+    private async Task MostrarAlertaTemporal2(string mensaje, int duracion = 2000)
+    {
+        mensajeAlerta2 = mensaje;
+        mostrarAlerta2 = true;
+        StateHasChanged();
+
+        await Task.Delay(duracion);
+
+        mostrarAlerta2 = false;
         StateHasChanged();
     }
 
@@ -91,7 +156,7 @@ else
             {
                 carritoItems.RemoveAll(x => x.CarritoId == carritoId);
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Producto eliminado del carrito");
+                await MostrarAlertaTemporal("Producto eliminado del carrito", 2000);
             }
             else
             {
@@ -119,7 +184,7 @@ else
             {
                 carritoItems.RemoveAll(x => x.CarritoId == carritoId);
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Producto comprado con éxito");
+                await MostrarAlertaTemporal2("Producto comprado con éxito", 2000);
             }
             else
             {
@@ -148,7 +213,7 @@ else
             {
                 carritoItems.Clear();
                 StateHasChanged();
-                await JSRuntime.InvokeVoidAsync("alert", "Compra realizada con éxito");
+                await MostrarAlertaTemporal2("Compra realizada con éxito", 2000);
             }
             else
             {
