@@ -9,6 +9,7 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Inicio de Sesi&oacute;n</PageTitle>
 
@@ -83,8 +84,21 @@
     {
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
-            // Clear the existing external cookie to ensure a clean login process
+            // Limpia cualquier autenticación residual
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
+            // Limpia las cookies del lado del cliente
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("eval",
+                    "document.cookie.split(';').forEach(c => { " +
+                    "const name = c.trim().split('=')[0]; " +
+                    "if (name.startsWith('Kitter.') || name.startsWith('.AspNetCore.')) { " +
+                    "document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; " +
+                    "}});");
+            }
+            catch { /* Ignorar errores si JS no está disponible aún */ }
         }
     }
 
