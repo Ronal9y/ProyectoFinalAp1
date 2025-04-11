@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
 <div class="pet-shop">
     <section class="section hero has-bg-image" id="home" aria-label="home" style="background-image: url('imagenes/hero-banner.jpg');">
@@ -15,12 +16,12 @@
     <section class="section category" aria-label="category">
         <div class="container">
             <h1 class="h2 section-title" style="font-size: 1.4rem">
-                <span class="span" style="color:white; font-size:1.5rem">Top</span> Categorias
+                <span class="span" style="color:orange; font-size:1.5rem">Top</span> Categorias
             </h1>
             <ul class="has-scrollbar">
 
                 <li class="scrollbar-item">
-                    <div class="category-card">
+                    <div class="category-card" @onclick="NavigateToProducts">
                         <figure class="card-banner img-holder" style="--width: 300; --height: 250;">
                             <img src="productos/alimento/comida para perros.jpg" width="200" height="200" loading="lazy" alt="Cat Food" class="img-cover">
                         </figure>
@@ -31,7 +32,7 @@
                 </li>
 
                 <li class="scrollbar-item">
-                    <div class="category-card">
+                    <div class="category-card" @onclick="NavigateToProducts">
                         <figure class="card-banner img-holder" style="--width: 330; --height: 200;">
                             <img src="productos/jugetes/baloncesto para aves.jpg" width="200" height="200" loading="lazy" alt="Cat Food" class="img-cover">
                         </figure>
@@ -42,7 +43,7 @@
                 </li>
 
                 <li class="scrollbar-item">
-                    <div class="category-card">
+                    <div class="category-card" @onclick="NavigateToProducts">
                         <figure class="card-banner img-holder" style="--width: 300; --height: 250;">
                             <img src="productos/medicina/antiinflamatorios.jpg" width="200" height="200" loading="lazy" alt="Cat Food" class="img-cover">
                         </figure>
@@ -53,7 +54,7 @@
                 </li>
 
                 <li class="scrollbar-item">
-                    <div class="category-card">
+                    <div class="category-card" @onclick="NavigateToProducts">
                         <figure class="card-banner img-holder" style="--width: 300; --height: 250;">
                             <img src="productos/accesorios/cama para perros.jpg" width="200" height="200" loading="lazy" alt="Cat Food" class="img-cover">
                         </figure>
@@ -69,4 +70,10 @@
 </div>
 
 @code {
+
+    private void NavigateToProducts()
+    {
+        NavigationManager.NavigateTo("/Producto/Index");
+    }
+
 }
